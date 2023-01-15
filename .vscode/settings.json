@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "any": "cpp",
+        "map": "cpp",
+        "string": "cpp"
+    },
+    "C/C++ Include Guard.Macro Type": "Filepath"
+}
