@@ -12,7 +12,7 @@ void getOpenedApps(std::vector<AppRecord>* apps) {
 
 static BOOL CALLBACK enumWindowCallback(HWND hWnd, LPARAM lparam)
 {
-    std::vector<AppRecord>* apps = reinterpret_cast<std::vector<AppRecord>*>(apps);
+    std::vector<AppRecord>* apps = reinterpret_cast<std::vector<AppRecord>*>(lparam);
 
     int titleLength = GetWindowTextLength(hWnd);
     char *bufferTitle = new char[titleLength + 1];

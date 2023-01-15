@@ -7,6 +7,7 @@
 struct AppRecord {
     std::string path;
     std::string title;
+    bool isActive = false;
 };
 
 struct LogEntry {
