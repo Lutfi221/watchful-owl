@@ -9,6 +9,7 @@
                 "-g",
                 "${fileDirname}\\main.cpp",
                 "${fileDirname}\\capturer.cpp",
+                "${fileDirname}\\helpers.cpp",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],

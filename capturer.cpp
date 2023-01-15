@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include <iostream>
 #include "capturer.h"
+#include "helpers.h"
 
 static BOOL CALLBACK enumWindowCallback(HWND hWnd, LPARAM lparam);
 
@@ -28,13 +29,13 @@ static BOOL CALLBACK enumWindowCallback(HWND hWnd, LPARAM lparam)
     HWND activeWindow = callbackParams->activeWindow;
 
     int titleLength = GetWindowTextLength(hWnd);
-    char *bufferTitle = new char[titleLength + 1];
-    GetWindowTextA(hWnd, bufferTitle, titleLength + 1);
-    std::string title(bufferTitle);
+    wchar_t* bufferTitle = new wchar_t[titleLength + 1];
+    GetWindowTextW(hWnd, bufferTitle, titleLength + 1);
+    std::wstring title(bufferTitle);
     delete[] bufferTitle;
 
-    LONG exStyles = GetWindowLongA(hWnd, GWL_EXSTYLE);
-    LONG styles = GetWindowLongA(hWnd, GWL_STYLE);
+    LONG exStyles = GetWindowLongW(hWnd, GWL_EXSTYLE);
+    LONG styles = GetWindowLongW(hWnd, GWL_STYLE);
     bool isCaption = (styles & WS_CAPTION) != 0;
     bool isOverlapped = (styles & WS_OVERLAPPEDWINDOW) != 0;
 
@@ -42,7 +43,7 @@ static BOOL CALLBACK enumWindowCallback(HWND hWnd, LPARAM lparam)
     {
         AppRecord appRecord;
         appRecord.path = "<UNKNOWN>";
-        appRecord.title = title;
+        appRecord.title = toUtf8(title);
         appRecord.isActive = hWnd == activeWindow;
         apps->push_back(appRecord);
     }
