@@ -20,7 +20,8 @@ int main()
     {
         entry["apps"].push_back({
             {"title", appRecord.title},
-            {"path", appRecord.path}
+            {"path", appRecord.path},
+            {"isActive", appRecord.isActive}
         });
     };
 

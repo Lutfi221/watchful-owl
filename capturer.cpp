@@ -2,17 +2,30 @@
 #include <string>
 #include <vector>
 #include <Windows.h>
+#include <iostream>
 #include "capturer.h"
 
 static BOOL CALLBACK enumWindowCallback(HWND hWnd, LPARAM lparam);
 
-void getOpenedApps(std::vector<AppRecord>* apps) {
-    EnumWindows(enumWindowCallback, reinterpret_cast<LPARAM>(apps));
+struct CallbackParams
+{
+    std::vector<AppRecord>* pApps;
+    HWND activeWindow;
+};
+
+void getOpenedApps(std::vector<AppRecord> *apps)
+{
+    struct CallbackParams lparam;
+    lparam.pApps = apps;
+    lparam.activeWindow = GetForegroundWindow();
+    EnumWindows(enumWindowCallback, reinterpret_cast<LPARAM>(&lparam));
 }
 
 static BOOL CALLBACK enumWindowCallback(HWND hWnd, LPARAM lparam)
 {
-    std::vector<AppRecord>* apps = reinterpret_cast<std::vector<AppRecord>*>(lparam);
+    struct CallbackParams* callbackParams = reinterpret_cast<CallbackParams*>(lparam);
+    auto *apps = callbackParams->pApps;
+    HWND activeWindow = callbackParams->activeWindow;
 
     int titleLength = GetWindowTextLength(hWnd);
     char *bufferTitle = new char[titleLength + 1];
@@ -30,6 +43,7 @@ static BOOL CALLBACK enumWindowCallback(HWND hWnd, LPARAM lparam)
         AppRecord appRecord;
         appRecord.path = "<UNKNOWN>";
         appRecord.title = title;
+        appRecord.isActive = hWnd == activeWindow;
         apps->push_back(appRecord);
     }
     return TRUE;
