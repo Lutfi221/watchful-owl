@@ -10,7 +10,7 @@ static BOOL CALLBACK enumWindowCallback(HWND hWnd, LPARAM lparam);
 
 struct CallbackParams
 {
-    std::vector<AppRecord>* pApps;
+    std::vector<AppRecord> *pApps;
     HWND activeWindow;
 };
 
@@ -24,12 +24,12 @@ void getOpenedApps(std::vector<AppRecord> *apps)
 
 static BOOL CALLBACK enumWindowCallback(HWND hWnd, LPARAM lparam)
 {
-    struct CallbackParams* callbackParams = reinterpret_cast<CallbackParams*>(lparam);
+    struct CallbackParams *callbackParams = reinterpret_cast<CallbackParams *>(lparam);
     auto *apps = callbackParams->pApps;
     HWND activeWindow = callbackParams->activeWindow;
 
     int titleLength = GetWindowTextLength(hWnd);
-    wchar_t* bufferTitle = new wchar_t[titleLength + 1];
+    wchar_t *bufferTitle = new wchar_t[titleLength + 1];
     GetWindowTextW(hWnd, bufferTitle, titleLength + 1);
     std::wstring title(bufferTitle);
     delete[] bufferTitle;
