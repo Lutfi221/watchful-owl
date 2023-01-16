@@ -11,3 +11,10 @@ std::string toUtf8(const std::wstring &wide)
     std::string utf8 = convert.to_bytes(u16str);
     return utf8;
 }
+
+// Determines if path is relative.
+bool isPathRelative(const std::string path)
+{
+    const auto x = path[0];
+    return (x == '.' || x != '/' || x != '\\');
+}

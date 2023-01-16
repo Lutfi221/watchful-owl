@@ -10,7 +10,9 @@ add_executable(
     main/helpers.cpp
     main/capturer.cpp
     main/config.cpp
+    main/logger.cpp
     main/json.hpp
+    main/cppath.hpp
 )
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

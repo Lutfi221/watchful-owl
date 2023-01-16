@@ -3,6 +3,7 @@
 #include <fstream>
 #include "config.h"
 #include "capturer.h"
+#include "logger.h"
 #include "json.hpp"
 
 using namespace std;
@@ -11,10 +12,10 @@ using json = nlohmann::json;
 int main()
 {
     auto config = loadConfig(true);
-    cout << config.outDir;
 
     json entry;
-    entry["time"] = time(nullptr);
+    time_t timestamp = time(nullptr);
+    entry["time"] = timestamp;
 
     vector<AppRecord> apps;
     getOpenedApps(&apps);
@@ -28,7 +29,7 @@ int main()
                                  {"isActive", appRecord.isActive}});
     };
 
-    cout << entry.dump(4) << endl;
+    appendLogEntry(entry, config, timestamp);
 
     return 0;
 }

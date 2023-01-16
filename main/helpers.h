@@ -15,4 +15,6 @@ inline bool fileExists(const std::string &name)
         return false;
 }
 
+bool isPathRelative(const std::string path);
+
 #endif /* MAIN_HELPERS */
