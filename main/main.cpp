@@ -9,12 +9,23 @@
 using namespace std;
 using json = nlohmann::json;
 
+json generateBasicLogEntry(Config config, time_t timestamp);
+
 int main()
 {
     auto config = loadConfig(true);
-
-    json entry;
     time_t timestamp = time(nullptr);
+
+    json entry = generateBasicLogEntry(config, timestamp);
+
+    appendLogEntry(entry, config, timestamp);
+
+    return 0;
+}
+
+json generateBasicLogEntry(Config config, time_t timestamp)
+{
+    json entry;
     entry["time"] = timestamp;
 
     vector<AppRecord> apps;
@@ -30,7 +41,5 @@ int main()
             entry["apps"].back()["isActive"] = true;
     };
 
-    appendLogEntry(entry, config, timestamp);
-
-    return 0;
+    return entry;
 }
