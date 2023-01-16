@@ -4,6 +4,8 @@ project(watchful-owl VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
+find_library (PSAPI Psapi)
+
 add_executable(
     watchful-owl 
     main/main.cpp
@@ -14,6 +16,8 @@ add_executable(
     main/json.hpp
     main/cppath.hpp
 )
+
+target_link_libraries(watchful-owl -lpsapi)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

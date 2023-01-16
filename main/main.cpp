@@ -25,8 +25,9 @@ int main()
     for (auto const &appRecord : apps)
     {
         entry["apps"].push_back({{"title", appRecord.title},
-                                 {"path", appRecord.path},
-                                 {"isActive", appRecord.isActive}});
+                                 {"path", appRecord.path}});
+        if (appRecord.isActive)
+            entry["apps"].back()["isActive"] = true;
     };
 
     appendLogEntry(entry, config, timestamp);

@@ -2,11 +2,12 @@
 #include <string>
 #include <vector>
 #include <Windows.h>
-#include <iostream>
+#include <psapi.h>
 #include "capturer.h"
 #include "helpers.h"
 
 static BOOL CALLBACK enumWindowCallback(HWND hWnd, LPARAM lparam);
+std::wstring getWindowProcessPath(HWND hWnd);
 
 struct CallbackParams
 {
@@ -42,10 +43,31 @@ static BOOL CALLBACK enumWindowCallback(HWND hWnd, LPARAM lparam)
     if (IsWindowVisible(hWnd) && isCaption && isOverlapped && titleLength != 0)
     {
         AppRecord appRecord;
-        appRecord.path = "<UNKNOWN>";
+        appRecord.path = toUtf8(getWindowProcessPath(hWnd));
         appRecord.title = toUtf8(title);
         appRecord.isActive = hWnd == activeWindow;
         apps->push_back(appRecord);
     }
     return TRUE;
+}
+
+std::wstring getWindowProcessPath(HWND hWnd)
+{
+    DWORD pId;
+    HANDLE processHandle = NULL;
+    WCHAR processPath[MAX_PATH];
+
+    GetWindowThreadProcessId(hWnd, &pId);
+    processHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pId);
+    if (processHandle != NULL)
+    {
+        auto n = GetModuleFileNameExW(processHandle, NULL, processPath, MAX_PATH);
+        CloseHandle(processHandle);
+        if (n == 0)
+            return L"";
+    }
+    else
+        return L"";
+
+    return processPath;
 }
