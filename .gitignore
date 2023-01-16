@@ -1,2 +1,8 @@
 *.exe
 .vscode/settings.json
+
+
+config.json
+
+
+output/
