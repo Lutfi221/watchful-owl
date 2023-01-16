@@ -1,5 +1,5 @@
-#ifndef CONFIG
-#define CONFIG
+#ifndef MAIN_CONFIG
+#define MAIN_CONFIG
 #include <string>
 
 struct Config
@@ -9,4 +9,4 @@ struct Config
 
 Config loadConfig(bool createIfMissing = 0);
 
-#endif /* CONFIG */
+#endif /* MAIN_CONFIG */

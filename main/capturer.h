@@ -1,5 +1,5 @@
-#ifndef CAPTURER
-#define CAPTURER
+#ifndef MAIN_CAPTURER
+#define MAIN_CAPTURER
 
 #include <string>
 #include <vector>
@@ -19,4 +19,4 @@ struct LogEntry
 
 void getOpenedApps(std::vector<AppRecord> *apps);
 
-#endif /* CAPTURER */
+#endif /* MAIN_CAPTURER */

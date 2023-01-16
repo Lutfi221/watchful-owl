@@ -1,5 +1,5 @@
-#ifndef HELPERS
-#define HELPERS
+#ifndef MAIN_HELPERS
+#define MAIN_HELPERS
 #include <string>
 
 std::string toUtf8(const std::wstring &wide);
@@ -15,4 +15,4 @@ inline bool fileExists(const std::string &name)
         return false;
 }
 
-#endif /* HELPERS */
+#endif /* MAIN_HELPERS */
