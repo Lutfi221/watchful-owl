@@ -1,6 +1,7 @@
 #include <ctime>
 #include <iostream>
 #include <fstream>
+#include <Windows.h>
 #include "config.h"
 #include "capturer.h"
 #include "logger.h"
@@ -10,17 +11,39 @@ using namespace std;
 using json = nlohmann::json;
 
 json generateBasicLogEntry(Config config, time_t timestamp);
+void captureAndAppend(Config config);
 
-int main()
+int main(int argc, char **argv)
 {
+    if (argc == 1)
+    {
+        cout << "Use `--capture` to append a log entry to a log file." << endl
+             << "Use `--perpetual` to perpetually append a log entry every n minutes"
+             << " as specified in `config.json`.";
+        return 0;
+    }
     auto config = loadConfig(true);
-    time_t timestamp = time(nullptr);
-
-    json entry = generateBasicLogEntry(config, timestamp);
-
-    appendLogEntry(entry, config, timestamp);
-
+    if (string(argv[1]) == "--capture")
+    {
+        captureAndAppend(config);
+        return 0;
+    }
+    if (string(argv[1]) == "--perpetual")
+    {
+        while (true)
+        {
+            captureAndAppend(config);
+            Sleep(config.loggingInterval * 1000);
+        }
+    }
     return 0;
+}
+
+void captureAndAppend(Config config)
+{
+    time_t timestamp = time(nullptr);
+    json entry = generateBasicLogEntry(config, timestamp);
+    appendLogEntry(entry, config, timestamp);
 }
 
 json generateBasicLogEntry(Config config, time_t timestamp)

@@ -7,7 +7,7 @@
 
 inline nlohmann::json generateDefaultConfig()
 {
-    return nlohmann::json({{"outDir", "./owl-logs"}});
+    return nlohmann::json({{"outDir", "./owl-logs"}, {"loggingInterval", 60}});
 }
 
 Config loadConfig(bool createIfMissing)
@@ -35,5 +35,6 @@ Config loadConfig(bool createIfMissing)
 
     struct Config config;
     config.outDir = configJ["outDir"];
+    config.loggingInterval = configJ["loggingInterval"];
     return config;
 }

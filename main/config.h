@@ -5,6 +5,7 @@
 struct Config
 {
     std::string outDir;
+    unsigned int loggingInterval = 60;
 };
 
 Config loadConfig(bool createIfMissing = 0);
