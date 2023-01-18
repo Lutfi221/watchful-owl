@@ -1,6 +1,7 @@
 #include <string>
 #include <codecvt>
 #include <locale>
+#include <Windows.h>
 #include "helpers.h"
 
 // https://gist.github.com/gchudnov/c1ba72d45e394180e22f
@@ -17,4 +18,11 @@ bool isPathRelative(const std::string path)
 {
     const auto x = path[0];
     return (x == '.' || x != '/' || x != '\\');
+}
+
+std::string getExecutablePath()
+{
+    CHAR path[MAX_PATH];
+    GetModuleFileNameA(NULL, path, MAX_PATH);
+    return path;
 }

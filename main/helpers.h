@@ -17,4 +17,6 @@ inline bool fileExists(const std::string &name)
 
 bool isPathRelative(const std::string path);
 
+std::string getExecutablePath();
+
 #endif /* MAIN_HELPERS */

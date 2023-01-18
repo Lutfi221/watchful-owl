@@ -3,15 +3,22 @@
 #include "json.hpp"
 #include "config.h"
 #include "helpers.h"
+#include "cppath.hpp"
+
+inline nlohmann::json generateDefaultConfig()
+{
+    return nlohmann::json({{"outDir", "./owl-logs"}});
+}
 
 Config loadConfig(bool createIfMissing)
 {
-    std::ifstream f("default.config.json");
-    nlohmann::json configJ = nlohmann::json::parse(f);
+    const auto curdir = cpppath::dirname(getExecutablePath());
+    const auto configPath = cpppath::join({curdir, "config.json"});
+    nlohmann::json configJ = generateDefaultConfig();
 
-    if (fileExists("config.json"))
+    if (fileExists(configPath))
     {
-        std::ifstream f("config.json");
+        std::ifstream f(configPath);
         nlohmann::json patch = nlohmann::json::parse(f);
         configJ.merge_patch(patch);
     }
@@ -20,10 +27,9 @@ Config loadConfig(bool createIfMissing)
         if (createIfMissing)
         {
             // Copies `default.config.json` to `config.json`
-            std::ifstream src("default.config.json", std::ios::binary);
-            std::ofstream dst("config.json", std::ios::binary);
+            std::ofstream dst(configPath, std::ios::binary);
 
-            dst << src.rdbuf();
+            dst << configJ.dump(4);
         }
     }
 
