@@ -23,6 +23,15 @@ void getOpenedApps(std::vector<AppRecord> *apps)
     EnumWindows(enumWindowCallback, reinterpret_cast<LPARAM>(&lparam));
 }
 
+/// @brief Gets the duration (in seconds) since last user input.
+UINT getDurationSinceLastInput()
+{
+    LASTINPUTINFO lastInput;
+    lastInput.cbSize = sizeof(lastInput);
+    GetLastInputInfo(&lastInput);
+    return (GetTickCount() - lastInput.dwTime) / 1000;
+}
+
 static BOOL CALLBACK enumWindowCallback(HWND hWnd, LPARAM lparam)
 {
     struct CallbackParams *callbackParams = reinterpret_cast<CallbackParams *>(lparam);

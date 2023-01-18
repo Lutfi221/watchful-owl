@@ -19,4 +19,6 @@ struct LogEntry
 
 void getOpenedApps(std::vector<AppRecord> *apps);
 
+unsigned int getDurationSinceLastInput();
+
 #endif /* MAIN_CAPTURER */

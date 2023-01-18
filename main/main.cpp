@@ -42,7 +42,15 @@ int main(int argc, char **argv)
 void captureAndAppend(Config config)
 {
     time_t timestamp = time(nullptr);
-    json entry = generateBasicLogEntry(config, timestamp);
+    json entry;
+    UINT durationSinceLastInput = getDurationSinceLastInput();
+    if (durationSinceLastInput > config.idleThreshold)
+    {
+        entry["timestamp"] = timestamp;
+        entry["durationSinceLastInput"] = durationSinceLastInput;
+    }
+    else
+        entry = generateBasicLogEntry(config, timestamp);
     appendLogEntry(entry, config, timestamp);
 }
 

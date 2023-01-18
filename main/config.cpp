@@ -7,7 +7,9 @@
 
 inline nlohmann::json generateDefaultConfig()
 {
-    return nlohmann::json({{"outDir", "./owl-logs"}, {"loggingInterval", 60}});
+    return nlohmann::json({{"outDir", "./owl-logs"},
+                           {"loggingInterval", 60},
+                           {"idleThreshold", 60}});
 }
 
 Config loadConfig(bool createIfMissing)
@@ -36,5 +38,6 @@ Config loadConfig(bool createIfMissing)
     struct Config config;
     config.outDir = configJ["outDir"];
     config.loggingInterval = configJ["loggingInterval"];
+    config.idleThreshold = configJ["idleThreshold"];
     return config;
 }
