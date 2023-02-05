@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.11)
 project(watchful-owl VERSION 0.1.0)
 
 # --- Dependencies ---
@@ -24,17 +24,24 @@ endif()
 find_library(PSAPI Psapi)
 
 add_executable(
-    watchful-owl 
-    main/main.cpp
-    main/helpers.cpp
-    main/capturer.cpp
-    main/config.cpp
-    main/logger.cpp
-    main/json.hpp
-    main/cppath.hpp
+  watchful-owl 
+  main/main.cpp
+  main/helpers.cpp
+  main/capturer.cpp
+  main/config.cpp
+  main/logger.cpp
+  main/json.hpp
+  main/cppath.hpp
 )
 
-target_link_libraries(watchful-owl -lpsapi)
+target_link_libraries(watchful-owl
+  PRIVATE -lpsapi
+  PRIVATE ftxui::screen
+  PRIVATE ftxui::dom
+  PRIVATE ftxui::component
+)
+
+target_include_directories(watchful-owl PRIVATE main)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
