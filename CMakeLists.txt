@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.0.0)
 project(watchful-owl VERSION 0.1.0)
 
 # --- Dependencies ---
-cmake_policy(SET CMP0135 NEW)
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
+  cmake_policy(SET CMP0135 NEW)
+endif()
 
 include(FetchContent)
 
@@ -19,10 +21,7 @@ if(NOT ftxui_POPULATED)
 endif()
 # ---------------------
 
-include(CTest)
-enable_testing()
-
-find_library (PSAPI Psapi)
+find_library(PSAPI Psapi)
 
 add_executable(
     watchful-owl 
