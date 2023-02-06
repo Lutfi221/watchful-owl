@@ -26,6 +26,7 @@ find_library(PSAPI Psapi)
 add_executable(
   watchful-owl 
   main/main.cpp
+  main/ui/ui.cpp
   main/helpers.cpp
   main/capturer.cpp
   main/config.cpp

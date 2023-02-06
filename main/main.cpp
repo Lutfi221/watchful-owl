@@ -2,6 +2,9 @@
 #include <iostream>
 #include <fstream>
 #include <Windows.h>
+#include "ftxui/component/screen_interactive.hpp"
+
+#include "ui/ui.h"
 #include "config.h"
 #include "capturer.h"
 #include "logger.h"
@@ -15,28 +18,22 @@ void captureAndAppend(Config config);
 
 int main(int argc, char **argv)
 {
-    if (argc == 1)
+    auto screen = ftxui::ScreenInteractive::Fullscreen();
+    vector<string> entries = {"Activate Watchful Owl", "Enable Autorun", "Exit"};
+    int s = promptSelection(&screen, &entries, "Main Menu", "Watchful Owl is currently INACTIVE.");
+
+    switch (s)
     {
-        cout << "Use `--capture` to append a log entry to a log file." << endl
-             << "Use `--perpetual` to perpetually append a log entry every n minutes"
-             << " as specified in `config.json`.";
+    case 0:
+        /* activate watchful owl */
+        break;
+    case 1:
+        /* enable autorun */
+        break;
+    default:
         return 0;
+        break;
     }
-    auto config = loadConfig(true);
-    if (string(argv[1]) == "--capture")
-    {
-        captureAndAppend(config);
-        return 0;
-    }
-    if (string(argv[1]) == "--perpetual")
-    {
-        while (true)
-        {
-            captureAndAppend(config);
-            Sleep(config.loggingInterval * 1000);
-        }
-    }
-    return 0;
 }
 
 void captureAndAppend(Config config)
