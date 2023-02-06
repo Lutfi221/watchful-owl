@@ -26,3 +26,45 @@ void appendLogEntry(nlohmann::json entry, Config config, time_t timestamp)
     outFile << "\n"
             << entry.dump();
 }
+
+/// @brief Capture a snapshot
+/// @param config Config
+/// @param timestamp UNIX timestamp
+/// @return Snapshot
+nlohmann::json generateBasicLogEntry(Config config, time_t timestamp)
+{
+    nlohmann::json entry;
+    entry["time"] = timestamp;
+
+    std::vector<AppRecord> apps;
+    getOpenedApps(&apps);
+
+    entry["apps"] = nlohmann::json::array();
+
+    for (auto const &appRecord : apps)
+    {
+        entry["apps"].push_back({{"title", appRecord.title},
+                                 {"path", appRecord.path}});
+        if (appRecord.isActive)
+            entry["apps"].back()["isActive"] = true;
+    };
+
+    return entry;
+}
+
+/// @brief Capture snapshot, and append to log file.
+/// @param config Config
+void captureAndAppend(Config config)
+{
+    time_t timestamp = time(nullptr);
+    nlohmann::json entry;
+    unsigned int durationSinceLastInput = getDurationSinceLastInput();
+    if (durationSinceLastInput > config.idleThreshold)
+    {
+        entry["timestamp"] = timestamp;
+        entry["durationSinceLastInput"] = durationSinceLastInput;
+    }
+    else
+        entry = generateBasicLogEntry(config, timestamp);
+    appendLogEntry(entry, config, timestamp);
+}

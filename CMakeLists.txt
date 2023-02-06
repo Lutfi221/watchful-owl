@@ -1,6 +1,19 @@
 cmake_minimum_required(VERSION 3.11)
 project(watchful-owl VERSION 0.1.0)
 
+set(UI_SOURCE_FILES
+  main/ui/ui.cpp
+)
+
+set(COMMON_SOURCE_FILES 
+  main/helpers.cpp
+  main/capturer.cpp
+  main/config.cpp
+  main/logger.cpp
+  main/json.hpp
+  main/cppath.hpp
+)
+
 # --- Dependencies ---
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
   cmake_policy(SET CMP0135 NEW)
@@ -26,13 +39,8 @@ find_library(PSAPI Psapi)
 add_executable(
   watchful-owl 
   main/main.cpp
-  main/ui/ui.cpp
-  main/helpers.cpp
-  main/capturer.cpp
-  main/config.cpp
-  main/logger.cpp
-  main/json.hpp
-  main/cppath.hpp
+  ${UI_SOURCE_FILES}
+  ${COMMON_SOURCE_FILES}
 )
 
 target_link_libraries(watchful-owl
@@ -43,6 +51,18 @@ target_link_libraries(watchful-owl
 )
 
 target_include_directories(watchful-owl PRIVATE main)
+
+add_executable(
+  perpetual-owl 
+  main/perpetual.cpp
+  ${COMMON_SOURCE_FILES}
+)
+
+target_link_libraries(perpetual-owl
+  PRIVATE -lpsapi
+)
+
+target_include_directories(perpetual-owl PRIVATE main)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
