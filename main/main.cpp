@@ -8,6 +8,7 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
+    auto config = loadConfig();
     auto screen = ftxui::ScreenInteractive::Fullscreen();
     vector<string> entries = {"Activate Watchful Owl", "Enable Autorun", "Exit"};
     int s = promptSelection(&screen, &entries, "Main Menu", "Watchful Owl is currently INACTIVE.");

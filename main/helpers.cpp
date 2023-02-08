@@ -5,6 +5,7 @@
 #include <Windows.h>
 #include <tlhelp32.h>
 #include "helpers.h"
+#include <filesystem>
 
 // https://gist.github.com/gchudnov/c1ba72d45e394180e22f
 std::string toUtf8(const std::wstring &wide)
@@ -27,6 +28,12 @@ std::string getExecutablePath()
     CHAR path[MAX_PATH];
     GetModuleFileNameA(NULL, path, MAX_PATH);
     return path;
+}
+
+std::string getExecutableDirPath()
+{
+    std::filesystem::path p(getExecutablePath());
+    return p.remove_filename().u8string();
 }
 
 /// @brief Get process ids with the specified process name.

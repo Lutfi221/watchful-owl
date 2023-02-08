@@ -4,20 +4,26 @@
 #include "capturer.h"
 #include "helpers.h"
 #include "json.hpp"
-#include "cppath.hpp"
+#include <filesystem>
 
 void appendLogEntry(nlohmann::json entry, Config config, time_t timestamp)
 {
+    namespace fs = std::filesystem;
+
     std::string outFilePath;
     char formattedTime[32];
     strftime(formattedTime, sizeof(formattedTime), "%Y%m%d", localtime(&timestamp));
     std::string outFileName = std::string(formattedTime) + ".json.log";
 
     if (isPathRelative(config.outDir))
-        outFilePath = cpppath::normpath(
-            cpppath::join({cpppath::curdir(), config.outDir, outFileName}));
+    {
+        auto a = fs::path(getExecutableDirPath()),
+             b = fs::path(config.outDir),
+             c = fs::path(outFileName);
+        outFilePath = (a / b / c).u8string();
+    }
     else
-        outFilePath = cpppath::join({config.outDir, outFileName});
+        outFilePath = (fs::path(config.outDir) / fs::path(outFileName)).u8string();
 
     std::ofstream outFile;
     outFile.open(outFilePath, std::ios::out | std::ios_base::app);
