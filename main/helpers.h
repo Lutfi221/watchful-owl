@@ -3,6 +3,7 @@
 #include <string>
 #include <thread>
 #include <chrono>
+#include <filesystem>
 
 std::string toUtf8(const std::wstring &wide);
 
@@ -19,8 +20,8 @@ inline bool fileExists(const std::string &name)
 
 bool isPathRelative(const std::string path);
 
-std::string getExecutablePath();
-std::string getExecutableDirPath();
+std::filesystem::path getExecutablePath();
+std::filesystem::path getExecutableDirPath();
 
 void killOtherPerpetualInstances();
 void killAllPerpetualInstances();

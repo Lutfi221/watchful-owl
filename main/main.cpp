@@ -40,7 +40,7 @@ LoopStatus loop(ftxui::ScreenInteractive *screen, Config *config)
             killAllPerpetualInstances();
             break;
         }
-        perpetualExePath = (fs::path(getExecutableDirPath()) /
+        perpetualExePath = (getExecutableDirPath() /
                             fs::path(constants::PERPETUAL_EXE_FILENAME))
                                .u8string();
         startProgram(perpetualExePath);

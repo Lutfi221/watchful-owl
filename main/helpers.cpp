@@ -24,18 +24,16 @@ bool isPathRelative(const std::string path)
     return (x == '.' || x != '/' || x != '\\');
 }
 
-std::string getExecutablePath()
+std::filesystem::path getExecutablePath()
 {
     CHAR path[MAX_PATH];
     GetModuleFileNameA(NULL, path, MAX_PATH);
-    std::string s(path);
-    return s;
+    return std::filesystem::path(path);
 }
 
-std::string getExecutableDirPath()
+std::filesystem::path getExecutableDirPath()
 {
-    std::filesystem::path p(getExecutablePath());
-    return p.remove_filename().u8string();
+    return getExecutablePath().remove_filename();
 }
 
 /// @brief Get process ids with the specified process name.

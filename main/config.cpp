@@ -15,7 +15,7 @@ Config loadConfig(bool createIfMissing)
 {
     namespace fs = std::filesystem;
     auto curdir = getExecutableDirPath();
-    auto configPath = (fs::path(curdir) / fs::path("config.json")).u8string();
+    auto configPath = (curdir / fs::path("config.json")).u8string();
     nlohmann::json configJ = generateDefaultConfig();
 
     if (fileExists(configPath))

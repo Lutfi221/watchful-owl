@@ -17,7 +17,7 @@ void appendLogEntry(nlohmann::json entry, Config config, time_t timestamp)
 
     if (isPathRelative(config.outDir))
     {
-        auto a = fs::path(getExecutableDirPath()),
+        auto a = getExecutableDirPath(),
              b = fs::path(config.outDir),
              c = fs::path(outFileName);
         outFilePath = (a / b / c).u8string();
