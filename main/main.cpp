@@ -1,28 +1,66 @@
 #include <iostream>
+#include <filesystem>
 #include "ftxui/component/screen_interactive.hpp"
 
 #include "ui/ui.h"
 #include "config.h"
+#include "helpers.h"
 
 using namespace std;
+namespace fs = std::filesystem;
 
-int main(int argc, char **argv)
+enum LoopStatus
 {
-    auto config = loadConfig();
-    auto screen = ftxui::ScreenInteractive::Fullscreen();
-    vector<string> entries = {"Activate Watchful Owl", "Enable Autorun", "Exit"};
-    int s = promptSelection(&screen, &entries, "Main Menu", "Watchful Owl is currently INACTIVE.");
+    LoopResume,
+    LoopStop
+};
+
+LoopStatus loop(ftxui::ScreenInteractive *screen, Config *config)
+{
+    string perpetualExePath;
+    bool isInstanceRunning = isPerpetualInstanceRunning();
+    string mainDesc = isInstanceRunning
+                          ? "Watchful Owl is ACTIVE and currently logging your activity."
+                          : "Watchful Owl is currently INACTIVE.";
+    vector<string> entries = {
+        isInstanceRunning
+            ? "Deactivate Watchful Owl"
+            : "Activate Watchful Owl",
+        "Enable Autorun",
+        "Exit"};
+
+    int s = promptSelection(screen, &entries, "Main Menu", mainDesc);
 
     switch (s)
     {
-    case 0:
-        /* activate watchful owl */
+    case 0: /* activate or deactivate perpetual owl */
+        if (isInstanceRunning)
+        {
+            killAllPerpetualInstances();
+            break;
+        }
+        perpetualExePath = (fs::path(getExecutableDirPath()) /
+                            fs::path("perpetual-owl.exe"))
+                               .u8string();
+        startProgram(perpetualExePath);
         break;
     case 1:
         /* enable autorun */
         break;
     default:
-        return 0;
-        break;
+        return LoopStop;
     }
+    return LoopResume;
+}
+
+int main(int argc, char **argv)
+{
+    auto screen = ftxui::ScreenInteractive::Fullscreen();
+    auto config = loadConfig();
+    while (true)
+    {
+        if (loop(&screen, &config) == LoopStop)
+            return 0;
+    }
+    return 0;
 }

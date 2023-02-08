@@ -3,7 +3,6 @@
 #include "config.h"
 #include "helpers.h"
 #include <filesystem>
-#include <iostream>
 
 inline nlohmann::json generateDefaultConfig()
 {
@@ -17,7 +16,6 @@ Config loadConfig(bool createIfMissing)
     namespace fs = std::filesystem;
     auto curdir = getExecutableDirPath();
     auto configPath = (fs::path(curdir) / fs::path("config.json")).u8string();
-    std::cout << configPath << std::endl;
     nlohmann::json configJ = generateDefaultConfig();
 
     if (fileExists(configPath))

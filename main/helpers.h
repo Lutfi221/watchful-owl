@@ -23,10 +23,14 @@ std::string getExecutablePath();
 std::string getExecutableDirPath();
 
 void killOtherPerpetualInstances();
+void killAllPerpetualInstances();
+bool isPerpetualInstanceRunning();
 
 inline void sleepFor(unsigned int seconds)
 {
     std::this_thread::sleep_for(std::chrono::seconds(seconds));
 }
+
+void startProgram(std::string path);
 
 #endif /* MAIN_HELPERS */

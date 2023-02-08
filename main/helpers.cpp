@@ -27,7 +27,8 @@ std::string getExecutablePath()
 {
     CHAR path[MAX_PATH];
     GetModuleFileNameA(NULL, path, MAX_PATH);
-    return path;
+    std::string s(path);
+    return s;
 }
 
 std::string getExecutableDirPath()
@@ -69,6 +70,34 @@ std::vector<DWORD> getProcessIds(const std::string &processName)
     return ids;
 }
 
+// @brief Starts a program.
+// The program will run independently, and will keep running
+// even after the caller has terminated.
+//
+// https://stackoverflow.com/a/38158534
+void startProgram(std::string path)
+{
+    STARTUPINFOA si;
+    PROCESS_INFORMATION pi;
+
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&pi, sizeof(pi));
+
+    CreateProcessA(
+        path.c_str(),
+        NULL,               // Command line
+        NULL,               // Process handle not inheritable
+        NULL,               // Thread handle not inheritable
+        FALSE,              // Set handle inheritance to FALSE
+        CREATE_NEW_CONSOLE, // Opens file in a separate console
+        NULL,               // Use parent's environment block
+        NULL,               // Use parent's starting directory
+        &si,                // Pointer to STARTUPINFO structure
+        &pi                 // Pointer to PROCESS_INFORMATION structure
+    );
+}
+
 void killProcess(DWORD processId)
 {
     const auto explorer = OpenProcess(PROCESS_TERMINATE, false, processId);
@@ -76,7 +105,7 @@ void killProcess(DWORD processId)
     CloseHandle(explorer);
 }
 
-/// @brief Kill other running perpetual instances.
+/// @brief Kill other running perpetual instances except the current process.
 void killOtherPerpetualInstances()
 {
     DWORD currentPId = GetCurrentProcessId();
@@ -87,4 +116,18 @@ void killOtherPerpetualInstances()
             continue;
         killProcess(ids[i]);
     }
+}
+
+/// @brief Kill all running perpetual instances.
+void killAllPerpetualInstances()
+{
+    auto ids = getProcessIds("perpetual-owl.exe");
+    for (int i = 0; i < ids.size(); i++)
+        killProcess(ids[i]);
+}
+
+bool isPerpetualInstanceRunning()
+{
+    auto ids = getProcessIds("perpetual-owl.exe");
+    return ids.size() > 0;
 }
