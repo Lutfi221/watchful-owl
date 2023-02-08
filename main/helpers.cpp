@@ -4,6 +4,7 @@
 #include <locale>
 #include <Windows.h>
 #include <tlhelp32.h>
+#include "constants.hpp"
 #include "helpers.h"
 #include <filesystem>
 
@@ -109,7 +110,7 @@ void killProcess(DWORD processId)
 void killOtherPerpetualInstances()
 {
     DWORD currentPId = GetCurrentProcessId();
-    auto ids = getProcessIds("perpetual-owl.exe");
+    auto ids = getProcessIds(constants::PERPETUAL_EXE_FILENAME);
     for (int i = 0; i < ids.size(); i++)
     {
         if (currentPId == ids[i])
@@ -121,13 +122,13 @@ void killOtherPerpetualInstances()
 /// @brief Kill all running perpetual instances.
 void killAllPerpetualInstances()
 {
-    auto ids = getProcessIds("perpetual-owl.exe");
+    auto ids = getProcessIds(constants::PERPETUAL_EXE_FILENAME);
     for (int i = 0; i < ids.size(); i++)
         killProcess(ids[i]);
 }
 
 bool isPerpetualInstanceRunning()
 {
-    auto ids = getProcessIds("perpetual-owl.exe");
+    auto ids = getProcessIds(constants::PERPETUAL_EXE_FILENAME);
     return ids.size() > 0;
 }

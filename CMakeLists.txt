@@ -10,8 +10,11 @@ set(COMMON_SOURCE_FILES
   main/capturer.cpp
   main/config.cpp
   main/logger.cpp
+  main/constants.hpp
   main/json.hpp
 )
+
+set(PERPETUAL_TARGET_NAME "perpetual-owl")
 
 # --- Dependencies ---
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
@@ -33,6 +36,15 @@ if(NOT ftxui_POPULATED)
 endif()
 # ---------------------
 
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+  set(PERPETUAL_TARGET_NAME "${PERPETUAL_TARGET_NAME}-DEBUG")
+endif()
+
+add_compile_definitions(
+  "DEBUG=$<CONFIG:Debug>"
+  "PERPETUAL_TARGET_NAME=\"${PERPETUAL_TARGET_NAME}\""
+)
+
 find_library(PSAPI Psapi)
 
 add_executable(
@@ -52,16 +64,17 @@ target_link_libraries(watchful-owl
 target_include_directories(watchful-owl PRIVATE main)
 
 add_executable(
-  perpetual-owl 
+  ${PERPETUAL_TARGET_NAME} 
   main/perpetual.cpp
   ${COMMON_SOURCE_FILES}
 )
 
-target_link_libraries(perpetual-owl
+target_link_libraries(
+  ${PERPETUAL_TARGET_NAME}
   PRIVATE -lpsapi
 )
 
-target_include_directories(perpetual-owl PRIVATE main)
+target_include_directories(${PERPETUAL_TARGET_NAME} PRIVATE main)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

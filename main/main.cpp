@@ -2,6 +2,7 @@
 #include <filesystem>
 #include "ftxui/component/screen_interactive.hpp"
 
+#include "constants.hpp"
 #include "ui/ui.h"
 #include "config.h"
 #include "helpers.h"
@@ -40,7 +41,7 @@ LoopStatus loop(ftxui::ScreenInteractive *screen, Config *config)
             break;
         }
         perpetualExePath = (fs::path(getExecutableDirPath()) /
-                            fs::path("perpetual-owl.exe"))
+                            fs::path(constants::PERPETUAL_EXE_FILENAME))
                                .u8string();
         startProgram(perpetualExePath);
         break;
