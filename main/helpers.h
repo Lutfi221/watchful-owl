@@ -32,6 +32,7 @@ inline void sleepFor(unsigned int seconds)
     std::this_thread::sleep_for(std::chrono::seconds(seconds));
 }
 
+std::string readFile(std::string_view path);
 void startProgram(std::string path);
 
 #endif /* MAIN_HELPERS */

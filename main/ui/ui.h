@@ -9,4 +9,6 @@ int promptSelection(ftxui::ScreenInteractive *screen,
                     std::string title = "",
                     std::string description = "");
 
+void autorunConfigPage(ftxui::ScreenInteractive *screen);
+
 #endif /* MAIN_UI_UI */

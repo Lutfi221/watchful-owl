@@ -7,6 +7,7 @@
 #include "constants.hpp"
 #include "helpers.h"
 #include <filesystem>
+#include <fstream>
 
 // https://gist.github.com/gchudnov/c1ba72d45e394180e22f
 std::string toUtf8(const std::wstring &wide)
@@ -67,6 +68,23 @@ std::vector<DWORD> getProcessIds(const std::string &processName)
 
     CloseHandle(processesSnapshot);
     return ids;
+}
+
+// https://stackoverflow.com/a/116220
+std::string readFile(std::string_view path)
+{
+    constexpr auto read_size = std::size_t(4096);
+    auto stream = std::ifstream(path.data());
+    stream.exceptions(std::ios_base::badbit);
+
+    auto out = std::string();
+    auto buf = std::string(read_size, '\0');
+    while (stream.read(&buf[0], read_size))
+    {
+        out.append(buf, 0, stream.gcount());
+    }
+    out.append(buf, 0, stream.gcount());
+    return out;
 }
 
 // @brief Starts a program.

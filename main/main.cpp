@@ -27,7 +27,7 @@ LoopStatus loop(ftxui::ScreenInteractive *screen, Config *config)
         isInstanceRunning
             ? "Deactivate Watchful Owl"
             : "Activate Watchful Owl",
-        "Enable Autorun",
+        "Configure Autorun",
         "Exit"};
 
     int s = promptSelection(screen, &entries, "Main Menu", mainDesc);
@@ -46,7 +46,7 @@ LoopStatus loop(ftxui::ScreenInteractive *screen, Config *config)
         startProgram(perpetualExePath);
         break;
     case 1:
-        /* enable autorun */
+        autorunConfigPage(screen);
         break;
     default:
         return LoopStop;

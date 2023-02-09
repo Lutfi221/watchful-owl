@@ -11,6 +11,7 @@ set(COMMON_SOURCE_FILES
   main/config.cpp
   main/logger.cpp
   main/constants.hpp
+  main/autorun.cpp
   main/json.hpp
 )
 
