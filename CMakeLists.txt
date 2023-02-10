@@ -19,23 +19,10 @@ set(COMMON_SOURCE_FILES
 set(PERPETUAL_TARGET_NAME "perpetual-owl")
 
 # --- Dependencies ---
-if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
-  cmake_policy(SET CMP0135 NEW)
-endif()
-
-include(FetchContent)
-
-set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
-FetchContent_Declare(ftxui
-  URL https://github.com/ArthurSonzogni/FTXUI/archive/refs/tags/v3.0.0.tar.gz
-  URL_HASH MD5=b29f0f9eae43fdf1ce001131e9751893
+include(cmake/CPM.cmake)
+CPMAddPackage(
+  "gh:ArthurSonzogni/FTXUI@3.0.0"
 )
-
-FetchContent_GetProperties(ftxui)
-if(NOT ftxui_POPULATED)
-  FetchContent_Populate(ftxui)
-  add_subdirectory(${ftxui_SOURCE_DIR} ${ftxui_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
 # ---------------------
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
