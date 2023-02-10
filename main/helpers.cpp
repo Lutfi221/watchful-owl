@@ -1,13 +1,12 @@
-#include <string>
-#include <vector>
-#include <codecvt>
-#include <locale>
 #include <Windows.h>
-#include <tlhelp32.h>
-#include "constants.hpp"
-#include "helpers.h"
 #include <filesystem>
 #include <fstream>
+#include <string>
+#include <tlhelp32.h>
+#include <vector>
+
+#include "constants.hpp"
+#include "helpers.h"
 
 // https://gist.github.com/gchudnov/c1ba72d45e394180e22f
 std::string toUtf8(const std::wstring &wide)

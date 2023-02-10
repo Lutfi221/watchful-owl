@@ -2,7 +2,9 @@
 #define MAIN_UI_UI
 #include <string>
 #include <vector>
+
 #include "ftxui/component/screen_interactive.hpp"
+
 #include "config.h"
 
 enum NavFlag

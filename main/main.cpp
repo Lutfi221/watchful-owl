@@ -1,10 +1,11 @@
-#include <iostream>
 #include <filesystem>
+#include <iostream>
+
 #include "ftxui/component/screen_interactive.hpp"
 
 #include "constants.hpp"
-#include "ui/ui.h"
 #include "ui/browser.h"
+#include "ui/ui.h"
 
 using namespace std;
 

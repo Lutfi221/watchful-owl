@@ -1,8 +1,8 @@
-
-#include <string>
-#include <vector>
 #include <Windows.h>
 #include <psapi.h>
+#include <string>
+#include <vector>
+
 #include "capturer.h"
 #include "helpers.h"
 

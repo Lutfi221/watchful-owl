@@ -1,8 +1,10 @@
+#include <filesystem>
 #include <fstream>
+
 #include "json.hpp"
+
 #include "config.h"
 #include "helpers.h"
-#include <filesystem>
 
 inline nlohmann::json generateDefaultConfig()
 {

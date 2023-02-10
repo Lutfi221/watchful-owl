@@ -1,8 +1,9 @@
 #ifndef MAIN_UI_BROWSER
 #define MAIN_UI_BROWSER
-
 #include <stack>
+
 #include "ftxui/component/screen_interactive.hpp"
+
 #include "ui/ui.h"
 #include "config.h"
 

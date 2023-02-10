@@ -1,11 +1,12 @@
 #include <stack>
+#include <iostream>
+
 #include "ftxui/component/screen_interactive.hpp"
 
-#include "ui/ui.h"
 #include "constants.hpp"
+#include "ui/ui.h"
 #include "config.h"
 #include "browser.h"
-#include <iostream>
 
 bool Browser::iterate()
 {

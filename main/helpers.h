@@ -1,9 +1,9 @@
 #ifndef MAIN_HELPERS
 #define MAIN_HELPERS
-#include <string>
-#include <thread>
 #include <chrono>
 #include <filesystem>
+#include <string>
+#include <thread>
 
 std::string toUtf8(const std::wstring &wide);
 

@@ -1,7 +1,8 @@
 #include <Windows.h>
+
 #include "config.h"
-#include "logger.h"
 #include "helpers.h"
+#include "logger.h"
 
 using namespace std;
 

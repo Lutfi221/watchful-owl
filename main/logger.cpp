@@ -1,10 +1,11 @@
+#include <filesystem>
 #include <fstream>
 #include <time.h>
-#include "config.h"
+
 #include "capturer.h"
+#include "config.h"
 #include "helpers.h"
 #include "json.hpp"
-#include <filesystem>
 
 void appendLogEntry(nlohmann::json entry, Config config, time_t timestamp)
 {

@@ -1,10 +1,11 @@
 #include <Windows.h>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
-#include <cstring>
-#include "helpers.h"
+
 #include "autorun.h"
 #include "constants.hpp"
+#include "helpers.h"
 
 /// @brief Get the path to the autorunner.
 /// (Might not exist)
