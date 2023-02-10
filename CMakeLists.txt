@@ -33,7 +33,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 endif()
 
 add_compile_definitions(
-  "DEBUG=$<CONFIG:Debug>"
+  "DEBUG_BUILD=$<CONFIG:Debug>"
   "PERPETUAL_TARGET_NAME=\"${PERPETUAL_TARGET_NAME}\""
 )
 

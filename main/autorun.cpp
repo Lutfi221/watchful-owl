@@ -17,7 +17,7 @@ std::filesystem::path getRunnerPath()
     auto appdataPath = fs::path(lpBuffer);
     auto runnerPartialPath = fs::path(".\\Microsoft\\Windows\\Start Menu\\"
                                       "Programs\\Startup\\Watchful Owl Perpetual"
-#ifdef DEBUG
+#ifdef DEBUG_BUILD
                                       "-DEBUG"
 #endif
                                       ".bat");
