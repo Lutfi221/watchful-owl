@@ -17,8 +17,9 @@ int main(int argc, char **argv)
     {
         auto maxSize = 1048576; // 1 megabit
         auto maxFiles = 5;
-        auto outputPath = filesystem::canonical(constants::LOG_OUTPUT_DIR /
-                                                filesystem::path("./watchful-owl.log"))
+        auto outputPath = filesystem::weakly_canonical(
+                              constants::LOG_OUTPUT_DIR /
+                              filesystem::path("./watchful-owl.log"))
                               .u8string();
         auto logger = spdlog::rotating_logger_mt(
             "main", outputPath, maxSize, maxFiles);
