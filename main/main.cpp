@@ -4,64 +4,16 @@
 
 #include "constants.hpp"
 #include "ui/ui.h"
-#include "config.h"
-#include "helpers.h"
+#include "ui/browser.h"
 
 using namespace std;
-namespace fs = std::filesystem;
-
-enum LoopStatus
-{
-    LoopResume,
-    LoopStop
-};
-
-LoopStatus loop(ftxui::ScreenInteractive *screen, Config *config)
-{
-    string perpetualExePath;
-    bool isInstanceRunning = isPerpetualInstanceRunning();
-    string mainDesc = isInstanceRunning
-                          ? "Watchful Owl is ACTIVE and currently logging your activity."
-                          : "Watchful Owl is currently INACTIVE.";
-    vector<string> entries = {
-        isInstanceRunning
-            ? "Deactivate Watchful Owl"
-            : "Activate Watchful Owl",
-        "Configure Autorun",
-        "Exit"};
-
-    int s = promptSelection(screen, &entries, "Main Menu", mainDesc);
-
-    switch (s)
-    {
-    case 0: /* activate or deactivate perpetual owl */
-        if (isInstanceRunning)
-        {
-            killAllPerpetualInstances();
-            break;
-        }
-        perpetualExePath = (getExecutableDirPath() /
-                            fs::path(constants::PERPETUAL_EXE_FILENAME))
-                               .u8string();
-        startProgram(perpetualExePath);
-        break;
-    case 1:
-        autorunConfigPage(screen);
-        break;
-    default:
-        return LoopStop;
-    }
-    return LoopResume;
-}
 
 int main(int argc, char **argv)
 {
     auto screen = ftxui::ScreenInteractive::Fullscreen();
     auto config = loadConfig();
-    while (true)
-    {
-        if (loop(&screen, &config) == LoopStop)
-            return 0;
-    }
+    auto mainPage = MainPage(&screen, &config);
+    Browser browser = Browser(&screen, &mainPage);
+    browser.load();
     return 0;
 }

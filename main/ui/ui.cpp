@@ -9,9 +9,13 @@
 #include "ui.h"
 #include "autorun.h"
 #include "constants.hpp"
+#include "helpers.h"
 #include <filesystem>
 
-ftxui::Element BasePage(ftxui::Element child, std::string title, std::string description)
+ftxui::Element createBasePageElement(
+    ftxui::Element child,
+    std::string title,
+    std::string description)
 {
     using namespace ftxui;
     std::vector<Element> components;
@@ -30,7 +34,11 @@ ftxui::Element BasePage(ftxui::Element child, std::string title, std::string des
 /// @param title Title of the menu
 /// @param description Description of the menu
 /// @return
-int promptSelection(ftxui::ScreenInteractive *screen, std::vector<std::string> *entries, std::string title, std::string description)
+int promptSelection(
+    ftxui::ScreenInteractive *screen,
+    std::vector<std::string> *entries,
+    std::string title,
+    std::string description)
 {
     using namespace ftxui;
 
@@ -41,7 +49,7 @@ int promptSelection(ftxui::ScreenInteractive *screen, std::vector<std::string> *
     auto menu = Menu(entries, &selected, &option);
     auto render = [&]()
     {
-        return BasePage(menu->Render(), title, description);
+        return createBasePageElement(menu->Render(), title, description);
     };
 
     auto renderer = Renderer(menu, render);
@@ -49,10 +57,17 @@ int promptSelection(ftxui::ScreenInteractive *screen, std::vector<std::string> *
     return selected;
 }
 
-void autorunConfigPage(ftxui::ScreenInteractive *screen)
+Page::Page(ftxui::ScreenInteractive *screen, Config *config)
+    : screen(screen), config(config){};
+
+class AutorunConfigPage : public Page
 {
-    while (true)
+public:
+    using AutorunConfigPage::Page::Page;
+
+    NavInstruction load()
     {
+        NavInstruction navInstruction;
         AutorunStatus autorunStatus = getAutorunStatus();
         std::string description;
         std::vector<std::string> entries = {"", "Back"};
@@ -82,16 +97,66 @@ void autorunConfigPage(ftxui::ScreenInteractive *screen)
         default:
             break;
         }
-
-        auto s = promptSelection(screen, &entries, "Autorun Configuration", description);
+        auto s = promptSelection(this->screen, &entries, "Autorun Configuration", description);
 
         if (s == 1)
-            return;
+        {
+            navInstruction.stepsBack = 1;
+            return navInstruction;
+        }
 
+        navInstruction.flag = NavReload;
         if (autorunStatus == AutorunDisabled || autorunStatus == AutorunInvalid)
             enableAutorun();
         else
             disableAutorun();
+        return navInstruction;
     }
-    return;
+};
+
+NavInstruction MainPage::load()
+{
+    namespace fs = std::filesystem;
+    NavInstruction navInstruction;
+    bool isInstanceRunning = isPerpetualInstanceRunning();
+    std::string desc = isInstanceRunning
+                           ? "Watchful Owl is ACTIVE and currently logging your activity."
+                           : "Watchful Owl is currently INACTIVE.";
+    std::vector<std::string> entries = {
+        isInstanceRunning
+            ? "Deactivate Watchful Owl"
+            : "Activate Watchful Owl",
+        "Configure Autorun",
+        "Exit"};
+
+    int selection = promptSelection(screen, &entries, "Main Menu", desc);
+
+    std::string perpetualExePath;
+    switch (selection)
+    {
+    case 0:
+        /* activate or deactivate perpetual owl */
+        if (isInstanceRunning)
+            killAllPerpetualInstances();
+        else
+        {
+            perpetualExePath = (getExecutableDirPath() /
+                                fs::path(constants::PERPETUAL_EXE_FILENAME))
+                                   .u8string();
+            startProgram(perpetualExePath);
+        }
+        navInstruction.flag = NavReload;
+        break;
+    case 1:
+        /* go to autorun config page */
+        navInstruction.nextPage = new AutorunConfigPage(this->screen, this->config);
+        break;
+    case 2:
+        navInstruction.flag = NavExit;
+        break;
+    default:
+        navInstruction.flag = NavReload;
+        break;
+    }
+    return navInstruction;
 }
