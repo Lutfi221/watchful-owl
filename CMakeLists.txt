@@ -23,6 +23,9 @@ include(cmake/CPM.cmake)
 CPMAddPackage(
   "gh:ArthurSonzogni/FTXUI@3.0.0"
 )
+CPMAddPackage(
+  "gh:gabime/spdlog@1.11.0"
+)
 # ---------------------
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
@@ -48,6 +51,7 @@ target_link_libraries(watchful-owl
   PRIVATE ftxui::screen
   PRIVATE ftxui::dom
   PRIVATE ftxui::component
+  PRIVATE spdlog
 )
 
 target_include_directories(watchful-owl PRIVATE main)
@@ -62,6 +66,7 @@ add_executable(
 target_link_libraries(
   ${PERPETUAL_TARGET_NAME}
   PRIVATE -lpsapi
+  PRIVATE spdlog
 )
 
 target_include_directories(${PERPETUAL_TARGET_NAME} PRIVATE main)
