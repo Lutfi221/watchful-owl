@@ -1,25 +1,31 @@
-#include <stack>
 #include <iostream>
+#include <stack>
 
 #include "ftxui/component/screen_interactive.hpp"
 
-#include "constants.hpp"
-#include "ui/ui.h"
-#include "config.h"
 #include "browser.h"
+#include "config.h"
+#include "constants.hpp"
+#include "dev-logger.h"
+#include "ui/ui.h"
 
 bool Browser::iterate()
 {
-    NavInstruction n = this->pageStack.top()->load();
+    auto page = this->pageStack.top();
+    INFO("Load `{}` page", page->name);
+    NavInstruction n = page->load();
+    INFO("Page ended");
     if (n.flag == NavGeneric)
     {
         if (n.nextPage)
         {
+            INFO("Navigate to `{}` page", n.nextPage->name);
             this->pageStack.push(n.nextPage);
             return 1;
         }
         if (n.stepsBack != 0)
         {
+            INFO("Navigate {} steps back", n.stepsBack);
             for (int i = 0; i < n.stepsBack; i++)
             {
                 delete this->pageStack.top();
@@ -31,7 +37,11 @@ bool Browser::iterate()
                                    "`NavInstruction` have not been modified.");
     }
     if (n.flag == NavExit)
+    {
+        INFO("Received `NavExit` flag");
         return 0;
+    }
+    INFO("Navigate to main page");
     for (int i = 1; i < n.stepsBack; i++)
     {
         delete this->pageStack.top();
@@ -48,6 +58,8 @@ Browser::Browser(ftxui::ScreenInteractive *screen,
 
 void Browser::load()
 {
+    INFO("Start browser loop");
     while (this->iterate())
         ;
+    INFO("Ended browser loop");
 }

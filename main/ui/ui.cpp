@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -5,11 +6,11 @@
 #include "ftxui/component/component_options.hpp"
 #include "ftxui/component/screen_interactive.hpp"
 
-#include "ui.h"
 #include "autorun.h"
 #include "constants.hpp"
+#include "dev-logger.h"
 #include "helpers.h"
-#include <filesystem>
+#include "ui.h"
 
 ftxui::Element createBasePageElement(
     ftxui::Element child,
@@ -53,16 +54,21 @@ int promptSelection(
 
     auto renderer = Renderer(menu, render);
     screen->Loop(renderer);
+    INFO("User selected index `{}`, with the option `{}`",
+         selected,
+         (*entries)[selected]);
     return selected;
 }
 
-Page::Page(ftxui::ScreenInteractive *screen, Config *config)
-    : screen(screen), config(config){};
+Page::Page(ftxui::ScreenInteractive *screen, Config *config, std::string name)
+    : screen(screen), config(config), name(name){};
 
 class AutorunConfigPage : public Page
 {
 public:
-    using AutorunConfigPage::Page::Page;
+    const std::string name;
+    AutorunConfigPage(ftxui::ScreenInteractive *screen, Config *config)
+        : Page(screen, config, u8"AutorunConfig"){};
 
     NavInstruction load()
     {
@@ -73,12 +79,14 @@ public:
         switch (autorunStatus)
         {
         case AutorunDisabled:
+            INFO("Autorun is disabled");
             entries[0] = "Enable Autorun";
             description = "Autorun is NOT enabled for the current user. "
                           "Watchful Owl will NOT start automatically "
                           "when the computer turns on.";
             break;
         case AutorunInvalid:
+            INFO("Autorun is invalid");
             entries[0] = "Fix Invalid Autorun and Enable It";
             description = "Autorun is NOT VALID.\n"
                           "This might be caused by the following reasons:\n"
@@ -88,6 +96,7 @@ public:
                           "Would you like to fix the issue?";
             break;
         case AutorunEnabled:
+            INFO("Autorun is enabled");
             entries[0] = "Disable Autorun";
             description = "Autorun is ENABLED for the current user. "
                           "Watchful Owl will automatically "
@@ -113,11 +122,16 @@ public:
     }
 };
 
+MainPage::MainPage(ftxui::ScreenInteractive *screen, Config *config)
+    : Page(screen, config, u8"Main"){};
+
 NavInstruction MainPage::load()
 {
     namespace fs = std::filesystem;
     NavInstruction navInstruction;
     bool isInstanceRunning = isPerpetualInstanceRunning();
+    INFO("isInstanceRunning={}", isInstanceRunning);
+
     std::string desc = isInstanceRunning
                            ? "Watchful Owl is ACTIVE and currently logging your activity."
                            : "Watchful Owl is currently INACTIVE.";

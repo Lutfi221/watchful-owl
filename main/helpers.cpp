@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "constants.hpp"
+#include "dev-logger.h"
 #include "helpers.h"
 
 // https://gist.github.com/gchudnov/c1ba72d45e394180e22f
@@ -100,6 +101,7 @@ void startProgram(std::string path)
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
 
+    INFO("Starting program `{}`", path);
     CreateProcessA(
         path.c_str(),
         NULL,               // Command line
@@ -137,9 +139,13 @@ void killOtherPerpetualInstances()
 /// @brief Kill all running perpetual instances.
 void killAllPerpetualInstances()
 {
+    INFO("Killing all perpetual instances");
     auto ids = getProcessIds(constants::PERPETUAL_EXE_FILENAME);
     for (int i = 0; i < ids.size(); i++)
+    {
+        DEBUG("Killing process with id {}", ids[i]);
         killProcess(ids[i]);
+    }
 }
 
 bool isPerpetualInstanceRunning()

@@ -24,16 +24,17 @@ protected:
     Config *config;
 
 public:
-    Page(ftxui::ScreenInteractive *, Config *);
+    std::string name;
+    Page(ftxui::ScreenInteractive *, Config *, std::string);
     /// @brief Load page.
     virtual NavInstruction load() = 0;
 };
 
 class MainPage : public Page
 {
-    using MainPage::Page::Page;
-
 public:
+    std::string name;
+    MainPage(ftxui::ScreenInteractive *, Config *);
     NavInstruction load();
 };
 

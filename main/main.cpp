@@ -1,6 +1,7 @@
 #include <filesystem>
 #include <iostream>
 
+#include "dev-logger.h"
 #include "ftxui/component/screen_interactive.hpp"
 #include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/spdlog.h"
@@ -24,6 +25,8 @@ int main(int argc, char **argv)
         auto logger = spdlog::rotating_logger_mt(
             "main", outputPath, maxSize, maxFiles);
         spdlog::set_default_logger(logger);
+        logger->set_level(spdlog::level::debug);
+        logger->set_pattern("[%l] %v");
     }
     catch (const spdlog::spdlog_ex &ex)
     {
@@ -34,7 +37,11 @@ int main(int argc, char **argv)
     auto screen = ftxui::ScreenInteractive::Fullscreen();
     auto config = loadConfig();
     auto mainPage = MainPage(&screen, &config);
+    INFO("Initialized main page");
     Browser browser = Browser(&screen, &mainPage);
+    INFO("Initialized main browser");
+    INFO("Start main browser");
     browser.load();
+    INFO("Main browser ended");
     return EXIT_SUCCESS;
 }

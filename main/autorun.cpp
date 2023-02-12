@@ -5,6 +5,7 @@
 
 #include "autorun.h"
 #include "constants.hpp"
+#include "dev-logger.h"
 #include "helpers.h"
 
 /// @brief Get the path to the autorunner.
@@ -17,7 +18,7 @@ std::filesystem::path getRunnerPath()
     auto appdataPath = fs::path(lpBuffer);
     auto runnerPartialPath = fs::path(".\\Microsoft\\Windows\\Start Menu\\"
                                       "Programs\\Startup\\Watchful Owl Perpetual"
-#ifdef DEBUG_BUILD
+#if DEBUG_BUILD
                                       "-DEBUG"
 #endif
                                       ".bat");
@@ -51,7 +52,10 @@ void enableAutorun()
     batFile.open(RUNNER_PATH, std::ios::out | std::ofstream::trunc);
     if (batFile.fail())
         throw std::ios_base::failure(std::strerror(errno));
-    batFile << generateAutorunBatContent();
+    auto content = generateAutorunBatContent();
+    batFile << content;
+    INFO("Openned and written autorun file at `{}`", RUNNER_PATH.u8string());
+    DEBUG("Content written: `{}`", content);
 }
 
 void disableAutorun()

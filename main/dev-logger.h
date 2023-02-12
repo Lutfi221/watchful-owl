@@ -6,6 +6,6 @@
 #define DEBUG spdlog::debug
 #define INFO spdlog::info
 #define WARN spdlog::warn
-#define ERROR spdlog::error
+#define SPDERROR spdlog::error
 
 #endif /* MAIN_DEV_LOGGER */
