@@ -58,7 +58,6 @@ target_include_directories(watchful-owl PRIVATE main)
 
 add_executable(
   ${PERPETUAL_TARGET_NAME} 
-  WIN32
   main/perpetual.cpp
   ${COMMON_SOURCE_FILES}
 )
