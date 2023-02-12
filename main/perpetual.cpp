@@ -7,9 +7,12 @@
 
 using namespace std;
 
-int main(int argc, char **argv)
+int WinMain(
+    HINSTANCE hInstance,
+    HINSTANCE hPrevInstance,
+    LPSTR lpCmdLine,
+    int nShowCmd)
 {
-    FreeConsole();
     killOtherPerpetualInstances();
     auto config = loadConfig();
 
