@@ -27,6 +27,7 @@ CPMAddPackage(
   "gh:gabime/spdlog@1.11.0"
 )
 find_package(libtomcrypt 1.18.0 REQUIRED)
+find_package(libtommath 1.2.0 REQUIRED)
 # ---------------------
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
@@ -53,6 +54,7 @@ target_link_libraries(watchful-owl
   PRIVATE ftxui::dom
   PRIVATE ftxui::component
   PRIVATE spdlog
+  PRIVATE libtommath 
   PRIVATE libtomcrypt
 )
 
@@ -69,6 +71,7 @@ target_link_libraries(
   ${PERPETUAL_TARGET_NAME}
   PRIVATE -lpsapi
   PRIVATE spdlog
+  PRIVATE libtommath 
   PRIVATE libtomcrypt
 )
 
