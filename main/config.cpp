@@ -11,7 +11,10 @@ inline nlohmann::json generateDefaultConfig()
 {
     return nlohmann::json({{"outDir", "./owl-logs"},
                            {"loggingInterval", 60},
-                           {"idleThreshold", 60}});
+                           {"idleThreshold", 60},
+                           {"encryption",
+                            {"rsaPublicKeyPath", ""},
+                            {"enabled", false}}});
 }
 
 Config loadConfig(bool createIfMissing)
@@ -46,6 +49,8 @@ Config loadConfig(bool createIfMissing)
     config.outDir = configJ["outDir"];
     config.loggingInterval = configJ["loggingInterval"];
     config.idleThreshold = configJ["idleThreshold"];
+    config.encryption.enabled = configJ["encryption"]["enabled"];
+    config.encryption.rsaPublicKeyPath = configJ["encryption"]["rsaPublicKeyPath"];
     INFO("Loaded config `{}`", configJ.dump());
     return config;
 }
