@@ -21,8 +21,9 @@ struct Config
 };
 
 Config loadConfig(bool createIfMissing = 0);
+void saveConfig(Config *config);
 
 void to_json(nlohmann::json &j, const Config &c);
-
 void from_json(const nlohmann::json &j, Config &c);
+
 #endif /* MAIN_CONFIG */

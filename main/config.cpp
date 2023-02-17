@@ -4,34 +4,22 @@
 #include "json.hpp"
 
 #include "config.h"
+#include "constants.hpp"
 #include "dev-logger.h"
 #include "helpers.h"
 
-// inline nlohmann::json generateDefaultConfig()
-// {
-//     return nlohmann::json({{"outDir", "./owl-logs"},
-//                            {"loggingInterval", 60},
-//                            {"idleThreshold", 60},
-//                            {"encryption",
-//                             {"rsaPublicKeyPath", ""},
-//                             {"enabled", false}}});
-// }
-
 Config loadConfig(bool createIfMissing)
 {
-    namespace fs = std::filesystem;
-    struct Config config;
-    auto curdir = getExecutableDirPath();
-    auto configPath = (curdir / fs::path("config.json")).u8string();
-    DEBUG("Config path generated `{}`", configPath);
-
-    // Fill it with the default config.
+    std::string configPath = constants::CONFIG_PATH;
+    Config config;
+    // Initialize the json object with the default values.
     nlohmann::json configJ = config;
 
     if (fileExists(configPath))
     {
         DEBUG("Config file exists");
         std::ifstream f(configPath);
+
         nlohmann::json patch = nlohmann::json::parse(f);
         configJ.merge_patch(patch);
         INFO("Read config from `{}`", configPath);
@@ -39,6 +27,7 @@ Config loadConfig(bool createIfMissing)
     else
     {
         INFO("Config file doesn't exists, using default config");
+
         if (createIfMissing)
         {
             // Copies `default.config.json` to `config.json`
@@ -51,6 +40,18 @@ Config loadConfig(bool createIfMissing)
     config = configJ.get<Config>();
     INFO("Loaded config `{}`", configJ.dump());
     return config;
+}
+
+void saveJson(nlohmann::json data, std::string path)
+{
+    std::ofstream dst(path, std::ios::binary);
+    dst << data.dump(4);
+}
+
+void saveConfig(Config *config)
+{
+    nlohmann::json configJ = *config;
+    saveJson(configJ, constants::CONFIG_PATH);
 }
 
 void to_json(nlohmann::json &j, const Config &c)

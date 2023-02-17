@@ -122,6 +122,55 @@ public:
     }
 };
 
+class EncryptionConfigPage : public Page
+{
+public:
+    const std::string name;
+    EncryptionConfigPage(ftxui::ScreenInteractive *screen, Config *config)
+        : Page(screen, config, u8"EncryptionConfig"){};
+
+    NavInstruction load()
+    {
+        Config *config = this->config;
+        NavInstruction navInstruction;
+        auto publicKeyPath = config->encryption.rsaPublicKeyPath;
+        auto encryptionEnabled = config->encryption.enabled;
+
+        std::vector<std::string> entries = {
+            encryptionEnabled
+                ? "Disable Logging Encryption Temporarily"
+                : "Enable Logging Encryption",
+            "Back"};
+
+        int s = promptSelection(
+            screen, &entries, "Encryption Configuration",
+            "Log file encryption prevents other "
+            "people from accessing your log files.");
+
+        switch (s)
+        {
+        case 0:
+            navInstruction.flag = NavReload;
+            if (encryptionEnabled)
+            {
+                config->encryption.enabled = false;
+                saveConfig(config);
+                break;
+            }
+
+            config->encryption.enabled = true;
+            saveConfig(config);
+            break;
+
+        default:
+            navInstruction.stepsBack = 1;
+            break;
+        }
+
+        return navInstruction;
+    };
+};
+
 MainPage::MainPage(ftxui::ScreenInteractive *screen, Config *config)
     : Page(screen, config, u8"Main"){};
 
@@ -140,6 +189,7 @@ NavInstruction MainPage::load()
             ? "Deactivate Watchful Owl"
             : "Activate Watchful Owl",
         "Configure Autorun",
+        "Configure Encryption",
         "Exit"};
 
     int selection = promptSelection(screen, &entries, "Main Menu", desc);
@@ -165,6 +215,9 @@ NavInstruction MainPage::load()
         navInstruction.nextPage = new AutorunConfigPage(this->screen, this->config);
         break;
     case 2:
+        navInstruction.nextPage = new EncryptionConfigPage(this->screen, this->config);
+        break;
+    case 3:
         navInstruction.flag = NavExit;
         break;
     default:

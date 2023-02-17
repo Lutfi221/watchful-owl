@@ -38,8 +38,10 @@ int main(int argc, char **argv)
     auto config = loadConfig();
     auto mainPage = MainPage(&screen, &config);
     INFO("Initialized main page");
+
     Browser browser = Browser(&screen, &mainPage);
     INFO("Initialized main browser");
+
     INFO("Start main browser");
     browser.load();
     INFO("Main browser ended");
