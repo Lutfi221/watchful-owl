@@ -26,8 +26,20 @@ CPMAddPackage(
 CPMAddPackage(
   "gh:gabime/spdlog@1.11.0"
 )
-find_package(libtomcrypt 1.18.0 REQUIRED)
-find_package(libtommath 1.2.0 REQUIRED)
+CPMAddPackage(
+  NAME libtommath
+  GITHUB_REPOSITORY libtom/libtommath
+  VERSION 1.2.1
+  # 1.2.1 is not released yet, so use a recent commit
+  GIT_TAG 03de03dee753442d4b23166982514639c4ccbc39 
+)
+CPMAddPackage(
+  NAME libtomcrypt
+  GITHUB_REPOSITORY libtom/libtomcrypt
+  VERSION 1.18.3
+  # 1.18.3 is not released yet, so use a recent commit
+  GIT_TAG 2a1b284677a51f587ab7cd9d97395e0c0c93a447 
+)
 # ---------------------
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
