@@ -4,6 +4,7 @@ project(watchful-owl VERSION 1.0.0)
 set(UI_SOURCE_FILES
   main/ui/browser.cpp
   main/ui/ui.cpp
+  main/ui/pages.cpp
 )
 
 set(COMMON_SOURCE_FILES 

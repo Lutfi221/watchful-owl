@@ -8,6 +8,7 @@
 
 #include "constants.hpp"
 #include "ui/browser.h"
+#include "ui/pages.h"
 #include "ui/ui.h"
 
 using namespace std;

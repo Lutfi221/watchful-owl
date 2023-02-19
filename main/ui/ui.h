@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "ftxui/component/component.hpp"
 #include "ftxui/component/screen_interactive.hpp"
 
 #include "config.h"
@@ -30,19 +31,27 @@ public:
     virtual NavInstruction load() = 0;
 };
 
-class MainPage : public Page
-{
-public:
-    std::string name;
-    MainPage(ftxui::ScreenInteractive *, Config *);
-    NavInstruction load();
-};
-
 struct NavInstruction
 {
     NavFlag flag = NavGeneric;
     int stepsBack = 0;
     Page *nextPage = nullptr;
 };
+
+ftxui::Element createBasePageElement(
+    ftxui::Element child,
+    std::string title,
+    std::string description);
+
+/// @brief Display a menu of options, and return the index of selected option.
+/// @param entries List of options
+/// @param title Title of the menu
+/// @param description Description of the menu
+/// @return Index of selected option (zero-based)
+int promptSelection(
+    ftxui::ScreenInteractive *screen,
+    std::vector<std::string> *entries,
+    std::string title,
+    std::string description);
 
 #endif /* MAIN_UI_UI */
