@@ -38,7 +38,16 @@ struct NavInstruction
     Page *nextPage = nullptr;
 };
 
-ftxui::Element createBasePageElement(
+/// @brief Standard page layout.
+/// @param children Page content
+/// @param title Page title
+/// @param description Page description
+/// @return An ftxui element
+ftxui::Element basePage(
+    std::vector<ftxui::Element> children,
+    std::string title,
+    std::string description);
+ftxui::Element basePage(
     ftxui::Element child,
     std::string title,
     std::string description);

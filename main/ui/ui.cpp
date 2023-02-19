@@ -8,20 +8,30 @@
 #include "dev-logger.h"
 #include "ui.h"
 
-ftxui::Element createBasePageElement(
+ftxui::Element basePage(
     ftxui::Element child,
+    std::string title,
+    std::string description)
+{
+    return basePage(std::vector({child}), title, description);
+};
+
+ftxui::Element basePage(
+    std::vector<ftxui::Element> children,
     std::string title,
     std::string description)
 {
     using namespace ftxui;
     std::vector<Element> components;
+
     if (title != "")
         components.push_back(color(Color::Cyan, text(title) | bold));
     if (description != "")
         components.push_back(paragraph(description));
     if (components.size() != 0)
         components.push_back(separatorEmpty());
-    components.push_back(child);
+
+    components.insert(components.end(), children.begin(), children.end());
     return vbox(components);
 };
 
@@ -40,7 +50,7 @@ int promptSelection(
     auto menu = Menu(entries, &selected, &option);
     auto render = [&]()
     {
-        return createBasePageElement(menu->Render(), title, description);
+        return basePage(menu->Render(), title, description);
     };
 
     auto renderer = Renderer(menu, render);
