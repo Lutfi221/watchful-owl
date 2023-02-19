@@ -5,7 +5,8 @@
 
 struct EncryptionConfig
 {
-    std::string rsaPublicKeyPath = "";
+    std::string rsaPublicKeyPath = "./crypto/main.rsa-public.data";
+    std::string rsaPrivateKeyPath = "./crypto/main.rsa-private.data.enc";
     bool enabled = false;
 };
 

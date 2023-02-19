@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <fstream>
 #include <string>
 #include <vector>
 
@@ -8,6 +9,7 @@
 
 #include "autorun.h"
 #include "constants.hpp"
+#include "crypto.h"
 #include "dev-logger.h"
 #include "helpers.h"
 #include "ui.h"
@@ -123,6 +125,33 @@ NavInstruction AutorunConfigPage::load()
     return navInstruction;
 }
 
+class EncryptionSetUpPage : public Page
+{
+public:
+    const std::string name;
+    EncryptionSetUpPage(ftxui::ScreenInteractive *screen, Config *config)
+        : Page(screen, config, u8"EncryptionSetUp"){};
+    NavInstruction load();
+};
+
+NavInstruction EncryptionSetUpPage::load()
+{
+    Config *config = this->config;
+    NavInstruction navInstruction;
+    unsigned int size = 2048;
+    auto publicKeyPath = prepareAndProcessPath(config->encryption.rsaPublicKeyPath).u8string();
+    auto privateKeyPath = prepareAndProcessPath(config->encryption.rsaPrivateKeyPath).u8string();
+
+    crypto::RsaKey rsaKey;
+    rsaKey.generate(size);
+
+    rsaKey.saveToFile(crypto::KeyTypePublic, publicKeyPath);
+    rsaKey.saveToFile(crypto::KeyTypePrivate, privateKeyPath);
+
+    navInstruction.stepsBack = 1;
+    return navInstruction;
+};
+
 class EncryptionConfigPage : public Page
 {
 public:
@@ -131,13 +160,38 @@ public:
         : Page(screen, config, u8"EncryptionConfig"){};
     NavInstruction load();
 };
-
+enum EncryptionStatus
+{
+    EncryptionEnabled,
+    EncryptionIncomplete,
+    EncryptionDisabled
+};
 NavInstruction EncryptionConfigPage::load()
 {
     Config *config = this->config;
     NavInstruction navInstruction;
+    std::string desc;
+    EncryptionStatus encryptionStatus;
+
     auto publicKeyPath = config->encryption.rsaPublicKeyPath;
+    bool keyFileExists = fileExists(publicKeyPath);
     auto encryptionEnabled = config->encryption.enabled;
+
+    if (keyFileExists && encryptionEnabled)
+    {
+        desc = "Logging encryption is enabled";
+        encryptionStatus = EncryptionEnabled;
+    }
+    else if (!keyFileExists && encryptionEnabled)
+    {
+        desc = "RSA public key is missing, logging encryption is disabled.";
+        encryptionStatus = EncryptionIncomplete;
+    }
+    else
+    {
+        desc = "Logging encryption is disabled";
+        encryptionStatus = EncryptionDisabled;
+    }
 
     std::vector<std::string> entries = {
         encryptionEnabled
@@ -146,23 +200,20 @@ NavInstruction EncryptionConfigPage::load()
         "Back"};
 
     int s = promptSelection(
-        screen, &entries, "Encryption Configuration",
-        "Log file encryption prevents other "
-        "people from accessing your log files.");
+        this->screen, &entries, "Encryption Configuration", desc);
 
     switch (s)
     {
     case 0:
-        navInstruction.flag = NavReload;
-        if (encryptionEnabled)
+        if (encryptionStatus == EncryptionEnabled)
         {
             config->encryption.enabled = false;
             saveConfig(config);
+            navInstruction.flag = NavReload;
             break;
         }
 
-        config->encryption.enabled = true;
-        saveConfig(config);
+        navInstruction.nextPage = new EncryptionSetUpPage(this->screen, config);
         break;
 
     default:

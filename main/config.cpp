@@ -63,7 +63,8 @@ void to_json(nlohmann::json &j, const Config &c)
     };
     j["encryption"] = nlohmann::json{
         {"enabled", c.encryption.enabled},
-        {"rsaPublicKeyPath", c.encryption.rsaPublicKeyPath}};
+        {"rsaPublicKeyPath", c.encryption.rsaPublicKeyPath},
+        {"rsaPrivateKeyPath", c.encryption.rsaPrivateKeyPath}};
 };
 
 void from_json(const nlohmann::json &j, Config &c)
@@ -73,4 +74,5 @@ void from_json(const nlohmann::json &j, Config &c)
     j.at("idleThreshold").get_to(c.idleThreshold);
     j.at("encryption").at("enabled").get_to(c.encryption.enabled);
     j.at("encryption").at("rsaPublicKeyPath").get_to(c.encryption.rsaPublicKeyPath);
+    j.at("encryption").at("rsaPrivateKeyPath").get_to(c.encryption.rsaPrivateKeyPath);
 };
