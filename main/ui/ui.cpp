@@ -138,7 +138,26 @@ NavInstruction EncryptionSetUpPage::load()
 {
     Config *config = this->config;
     NavInstruction navInstruction;
-    unsigned int size = 2048;
+    unsigned int sizes[4] = {4096, 2048, 1024, 512};
+    std::vector<std::string> entries = {"4096 (best)",
+                                        "2048 (recommended by NIST of USA)",
+                                        "1024",
+                                        "512 (weakest)",
+                                        "Back"};
+    int s = promptSelection(this->screen,
+                            &entries,
+                            "RSA Key Size Selection",
+                            "How long (in bits) do you want the RSA key to be? "
+                            "The longer it is, the more secure, "
+                            "but will be (slightly) slower.");
+
+    if (s == 4)
+    {
+        navInstruction.stepsBack = 1;
+        return navInstruction;
+    }
+
+    unsigned int size = sizes[s];
     auto publicKeyPath = prepareAndProcessPath(config->encryption.rsaPublicKeyPath).u8string();
     auto privateKeyPath = prepareAndProcessPath(config->encryption.rsaPrivateKeyPath).u8string();
 
