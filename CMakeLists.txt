@@ -11,6 +11,7 @@ set(COMMON_SOURCE_FILES
   main/capturer.cpp
   main/config.cpp
   main/logger.cpp
+  main/crypto.cpp
   main/constants.hpp
   main/autorun.cpp
   main/json.hpp
@@ -25,6 +26,9 @@ CPMAddPackage(
 )
 CPMAddPackage(
   "gh:gabime/spdlog@1.11.0"
+)
+CPMAddPackage(
+  "gh:abdes/cryptopp-cmake#CRYPTOPP_8_7_0_1"
 )
 CPMAddPackage(
   NAME libtommath
@@ -68,6 +72,7 @@ target_link_libraries(watchful-owl
   PRIVATE spdlog
   PRIVATE libtommath 
   PRIVATE libtomcrypt
+  PRIVATE cryptopp
 )
 
 target_include_directories(watchful-owl PRIVATE main)
@@ -85,6 +90,7 @@ target_link_libraries(
   PRIVATE spdlog
   PRIVATE libtommath 
   PRIVATE libtomcrypt
+  PRIVATE cryptopp
 )
 
 target_include_directories(${PERPETUAL_TARGET_NAME} PRIVATE main)
