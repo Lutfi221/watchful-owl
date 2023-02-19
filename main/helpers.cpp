@@ -37,6 +37,24 @@ std::filesystem::path getExecutableDirPath()
     return getExecutablePath().remove_filename();
 }
 
+std::filesystem::path prepareAndProcessPath(std::string path, bool createDirs)
+{
+    return prepareAndProcessPath(std::filesystem::path(path), createDirs);
+}
+std::filesystem::path prepareAndProcessPath(std::filesystem::path path, bool createDirs)
+{
+    std::filesystem::path out;
+    if (path.is_relative())
+        out = getExecutableDirPath() / path;
+    else
+        out = path;
+
+    if (createDirs)
+        std::filesystem::create_directories(out.parent_path());
+
+    return std::filesystem::weakly_canonical(out);
+}
+
 /// @brief Get process ids with the specified process name.
 /// @param processName
 /// @return List of process ids

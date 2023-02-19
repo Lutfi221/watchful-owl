@@ -27,21 +27,37 @@ int main(int argc, char **argv)
         spdlog::set_default_logger(logger);
         logger->set_level(spdlog::level::debug);
         logger->set_pattern("[%l] %v");
+        spdlog::flush_every(std::chrono::seconds(3));
     }
     catch (const spdlog::spdlog_ex &ex)
     {
-        std::cout << "Log init failed: " << ex.what() << std::endl;
+        cout << "Log init failed: " << ex.what() << endl;
         return EXIT_FAILURE;
     }
 
-    auto screen = ftxui::ScreenInteractive::Fullscreen();
-    auto config = loadConfig();
-    auto mainPage = MainPage(&screen, &config);
-    INFO("Initialized main page");
-    Browser browser = Browser(&screen, &mainPage);
-    INFO("Initialized main browser");
-    INFO("Start main browser");
-    browser.load();
-    INFO("Main browser ended");
+    try
+    {
+        auto screen = ftxui::ScreenInteractive::Fullscreen();
+        auto config = loadConfig();
+        auto mainPage = MainPage(&screen, &config);
+        INFO("Initialized main page");
+
+        Browser browser = Browser(&screen, &mainPage);
+        INFO("Initialized main browser");
+
+        INFO("Start main browser");
+        browser.load();
+        INFO("Main browser ended");
+    }
+    catch (exception ex)
+    {
+        cout << "An error occured.\n"
+             << "Open the log file at `"
+             << constants::LOG_OUTPUT_DIR
+             << "` for more information.\n\n"
+             << ex.what() << endl;
+        spdlog::error(ex.what());
+        return EXIT_FAILURE;
+    }
     return EXIT_SUCCESS;
 }
