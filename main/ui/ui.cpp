@@ -61,5 +61,75 @@ int promptSelection(
     return selected;
 }
 
+std::string promptPassword(
+    ftxui::ScreenInteractive *screen,
+    bool withConfirmation,
+    std::string title,
+    std::string description)
+{
+    using namespace ftxui;
+    std::string password;
+    std::string passwordC;
+    bool isFirstAttempt = true;
+
+    InputOption passwordOption;
+    InputOption passwordCOption;
+    passwordOption.password = true;
+    passwordCOption.password = true;
+
+    Component passwordInput = Input(&password, "Password", &passwordOption);
+    Component passwordCInput = Input(&passwordC, "Confirm Password", &passwordCOption);
+
+    Component component;
+    std::vector<Element> content;
+
+    if (withConfirmation)
+    {
+        component = Container::Vertical({passwordInput, passwordCInput});
+        passwordOption.on_enter = [&]
+        { component->SetActiveChild(passwordCInput); };
+        passwordCOption.on_enter = screen->ExitLoopClosure();
+    }
+    else
+    {
+        component = Container::Vertical({passwordInput});
+        passwordOption.on_enter = screen->ExitLoopClosure();
+    }
+
+    auto render = [&]
+    {
+        std::vector<Element> content;
+
+        if (withConfirmation)
+            content = {hbox(text(" Password : "),
+                            passwordInput->Render()),
+                       hbox(text(" Confirm  : "),
+                            passwordCInput->Render())};
+        else
+            content = {hbox(text(" Password : "),
+                            passwordInput->Render())};
+
+        if (!isFirstAttempt && password != passwordC)
+        {
+            content.push_back(separatorEmpty());
+            content.push_back(hbox(color(
+                Color::Red,
+                paragraph("Passwords do not match, try again."))));
+        }
+
+        return basePage(content, title, description);
+    };
+
+    auto renderer = Renderer(component, render);
+    do
+    {
+        screen->Loop(renderer);
+        isFirstAttempt = false;
+        if (!withConfirmation)
+            break;
+    } while (password != passwordC);
+    return password;
+}
+
 Page::Page(ftxui::ScreenInteractive *screen, Config *config, std::string name)
     : screen(screen), config(config), name(name){};

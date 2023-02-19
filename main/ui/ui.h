@@ -63,4 +63,16 @@ int promptSelection(
     std::string title,
     std::string description);
 
+/// @brief Prompt user for a password
+/// @param screen FTXUI screen
+/// @param withConfirmation Display an extra password input as confirmation
+/// @param title Title
+/// @param description Description
+/// @return The inputted password
+std::string promptPassword(
+    ftxui::ScreenInteractive *screen,
+    bool withConfirmation = false,
+    std::string title = "",
+    std::string description = "");
+
 #endif /* MAIN_UI_UI */
