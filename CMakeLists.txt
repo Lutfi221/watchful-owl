@@ -30,20 +30,6 @@ CPMAddPackage(
 CPMAddPackage(
   "gh:abdes/cryptopp-cmake#CRYPTOPP_8_7_0_1"
 )
-CPMAddPackage(
-  NAME libtommath
-  GITHUB_REPOSITORY libtom/libtommath
-  VERSION 1.2.1
-  # 1.2.1 is not released yet, so use a recent commit
-  GIT_TAG 03de03dee753442d4b23166982514639c4ccbc39 
-)
-CPMAddPackage(
-  NAME libtomcrypt
-  GITHUB_REPOSITORY libtom/libtomcrypt
-  VERSION 1.18.3
-  # 1.18.3 is not released yet, so use a recent commit
-  GIT_TAG 2a1b284677a51f587ab7cd9d97395e0c0c93a447 
-)
 # ---------------------
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
@@ -70,8 +56,6 @@ target_link_libraries(watchful-owl
   PRIVATE ftxui::dom
   PRIVATE ftxui::component
   PRIVATE spdlog
-  PRIVATE libtommath 
-  PRIVATE libtomcrypt
   PRIVATE cryptopp
 )
 
@@ -88,8 +72,6 @@ target_link_libraries(
   ${PERPETUAL_TARGET_NAME}
   PRIVATE -lpsapi
   PRIVATE spdlog
-  PRIVATE libtommath 
-  PRIVATE libtomcrypt
   PRIVATE cryptopp
 )
 
