@@ -31,6 +31,19 @@ namespace crypto
         void saveToFile(KeyType keyType, std::string path, std::string password = "");
     };
 
+    class SymmetricKey
+    {
+    private:
+        CryptoPP::byte *secret = nullptr;
+        size_t secretLen;
+
+    public:
+        SymmetricKey(std::string password, CryptoPP::byte *salt, size_t saltLen);
+        ~SymmetricKey();
+
+        void encrypt(CryptoPP::byte *plain, size_t plainLen, CryptoPP::byte *cipher, size_t cipherLen);
+    };
+
     class CryptoError : public std::runtime_error
     {
         using CryptoError::runtime_error::runtime_error;

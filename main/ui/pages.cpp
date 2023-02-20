@@ -101,6 +101,12 @@ NavInstruction EncryptionSetUpPage::load()
         return navInstruction;
     }
 
+    std::string password = promptPassword(
+        this->screen, true,
+        "Encryption Password",
+        "Make a strong password to secure your activity log. "
+        "If you forget the password, your activities will be lost forever!");
+
     unsigned int size = sizes[s];
     auto publicKeyPath = prepareAndProcessPath(config->encryption.rsaPublicKeyPath).u8string();
     auto privateKeyPath = prepareAndProcessPath(config->encryption.rsaPrivateKeyPath).u8string();
@@ -109,7 +115,7 @@ NavInstruction EncryptionSetUpPage::load()
     rsaKey.generate(size);
 
     rsaKey.saveToFile(crypto::KeyTypePublic, publicKeyPath);
-    rsaKey.saveToFile(crypto::KeyTypePrivate, privateKeyPath);
+    rsaKey.saveToFile(crypto::KeyTypePrivate, privateKeyPath, password);
 
     navInstruction.stepsBack = 1;
     return navInstruction;
