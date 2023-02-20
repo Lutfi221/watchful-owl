@@ -47,8 +47,10 @@ void crypto::RsaKey::generate(unsigned int size)
 void crypto::RsaKey::saveToFile(crypto::KeyType keyType, std::string path, std::string password)
 {
     using namespace CryptoPP;
-    RSAFunction *key = nullptr;
+    FileSink file(path.c_str());
     ByteQueue q;
+    RSAFunction *key = nullptr;
+
     if (keyType == KeyTypePrivate)
         key = this->privateKey;
     else
@@ -65,17 +67,17 @@ void crypto::RsaKey::saveToFile(crypto::KeyType keyType, std::string path, std::
     {
         auto plainLen = q.CurrentSize();
         // TODO: Use secure bytes from CryptoPP
-        byte *plain = new byte[plainLen];
         DEBUG("Copy key to a byte array for encryption");
+        byte *plain = new byte[plainLen];
         q.Get(plain, plainLen);
 
         auto cipherLen = plainLen + 2 * AES_BLOCKSIZE;
         DEBUG("plainLen: `{} bytes`, cipherLen: `{} bytes`", plainLen, cipherLen);
         byte *cipher = new byte[cipherLen];
 
+        DEBUG("Generate random salt");
         AutoSeededRandomPool prng;
         byte *salt = new byte[SALT_LEN];
-        DEBUG("Generate random salt");
         prng.GenerateBlock(salt, SALT_LEN);
 
         DEBUG("Initialize SymmetricKey");
@@ -83,14 +85,22 @@ void crypto::RsaKey::saveToFile(crypto::KeyType keyType, std::string path, std::
         INFO("Encrypt key");
         symKey.encrypt(plain, plainLen, cipher, cipherLen);
 
-        delete[] plain;
-        delete[] cipher;
-        delete[] salt;
-
         DEBUG("Clear byte queue");
         q.Clear();
         DEBUG("Put encrypted key into byte queue");
         q.Put(cipher, cipherLen);
+
+        DEBUG("Convert salt to base64 and put into file sink");
+        Base64Encoder encoder;
+        encoder.Put(salt, SALT_LEN);
+        encoder.CopyTo(file);
+        encoder.MessageEnd();
+        file.Put('\n');
+        file.Put('\n');
+
+        delete[] plain;
+        delete[] cipher;
+        delete[] salt;
     };
 
     DEBUG("Copy from byte queue to base 64 encoder");
@@ -99,8 +109,8 @@ void crypto::RsaKey::saveToFile(crypto::KeyType keyType, std::string path, std::
     encoder.MessageEnd();
 
     DEBUG("Copy from base 64 encoder to file at `{}`", path);
-    FileSink file(path.c_str());
     encoder.CopyTo(file);
+
     file.MessageEnd();
 }
 
@@ -148,7 +158,12 @@ void crypto::SymmetricKey::encrypt(
     CBC_Mode<AES>::Encryption e;
     e.SetKeyWithIV(this->secret, this->secretLen, iv);
 
+    // Add IV to the start of the cipher.
+    std::copy(iv.begin(), iv.end(), cipher);
+
     ArraySource(plain, plainLen,
                 true,
-                new StreamTransformationFilter(e, new ArraySink(cipher, cipherLen)));
+                new StreamTransformationFilter(
+                    e,
+                    new ArraySink(cipher + iv.size(), cipherLen - iv.size())));
 };
