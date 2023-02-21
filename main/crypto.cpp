@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <memory>
 #include <stdexcept>
 
 #include "spdlog/stopwatch.h"
@@ -18,7 +19,7 @@
 #define AES_KEY_LEN 16
 #define AES_BLOCKSIZE CryptoPP::AES::BLOCKSIZE
 /// Salt length in bytes
-#define SALT_LEN 16
+#define SALT_LEN 32
 #define PBKDF2_ITERATIONS 1024
 
 crypto::RsaKey::~RsaKey()
@@ -44,7 +45,7 @@ void crypto::RsaKey::generate(unsigned int size)
     INFO("Time taken to generate RSA key pair: `{:.3} seconds`", sw);
 }
 
-void crypto::RsaKey::saveToFile(crypto::KeyType keyType, std::string path, std::string password)
+void crypto::RsaKey::saveToFile(crypto::KeyType keyType, std::string path, SymmetricKey *symKey)
 {
     using namespace CryptoPP;
     FileSink file(path.c_str());
@@ -63,7 +64,7 @@ void crypto::RsaKey::saveToFile(crypto::KeyType keyType, std::string path, std::
     DEBUG("Copy key to byte queue");
     key->Save(q);
 
-    if (!password.empty())
+    if (symKey != nullptr)
     {
         auto plainLen = q.CurrentSize();
         // TODO: Use secure bytes from CryptoPP
@@ -71,36 +72,20 @@ void crypto::RsaKey::saveToFile(crypto::KeyType keyType, std::string path, std::
         byte *plain = new byte[plainLen];
         q.Get(plain, plainLen);
 
-        auto cipherLen = plainLen + 2 * AES_BLOCKSIZE;
+        auto cipherLen = symKey->calculateCipherLen(plainLen);
         DEBUG("plainLen: `{} bytes`, cipherLen: `{} bytes`", plainLen, cipherLen);
         byte *cipher = new byte[cipherLen];
 
-        DEBUG("Generate random salt");
-        AutoSeededRandomPool prng;
-        byte *salt = new byte[SALT_LEN];
-        prng.GenerateBlock(salt, SALT_LEN);
-
-        DEBUG("Initialize SymmetricKey");
-        auto symKey = SymmetricKey(password, salt, SALT_LEN);
         INFO("Encrypt key");
-        symKey.encrypt(plain, plainLen, cipher, cipherLen);
+        symKey->encrypt(plain, plainLen, cipher, cipherLen);
 
         DEBUG("Clear byte queue");
         q.Clear();
         DEBUG("Put encrypted key into byte queue");
         q.Put(cipher, cipherLen);
 
-        DEBUG("Convert salt to base64 and put into file sink");
-        Base64Encoder encoder;
-        encoder.Put(salt, SALT_LEN);
-        encoder.CopyTo(file);
-        encoder.MessageEnd();
-        file.Put('\n');
-        file.Put('\n');
-
         delete[] plain;
         delete[] cipher;
-        delete[] salt;
     };
 
     DEBUG("Copy from byte queue to base 64 encoder");
@@ -145,21 +130,68 @@ void derivePassword(CryptoPP::byte *derived,
                     salt, saltLen, iterations);
 }
 
+crypto::SymmetricKey::SymmetricKey(std::string password)
+{
+    using namespace CryptoPP;
+    DEBUG("Generate random salt");
+    AutoSeededRandomPool prng;
+
+    this->salt = new byte[SALT_LEN];
+    this->saltLen = SALT_LEN;
+    prng.GenerateBlock(salt, SALT_LEN);
+
+    this->populateSecret();
+}
+crypto::SymmetricKey::SymmetricKey(std::string password, std::string saltSavePath)
+{
+    using namespace CryptoPP;
+    this->password = password;
+
+    DEBUG("Read salt file `{}`", saltSavePath);
+    ByteQueue q;
+    FileSource fs(saltSavePath.c_str(), true, new Base64Decoder(new Redirector(q)));
+    fs.MessageEnd();
+
+    this->saltLen = q.CurrentSize();
+    DEBUG("Salt length: {} bytes", this->saltLen);
+
+    this->salt = new byte[saltLen];
+    fs.Get(this->salt, this->saltLen);
+    this->populateSecret();
+};
+
 crypto::SymmetricKey::SymmetricKey(std::string password, CryptoPP::byte *salt, size_t saltLen)
     : secretLen(AES_KEY_LEN)
 {
-    CryptoPP::byte *p = new CryptoPP::byte[password.size()];
-    std::copy(password.begin(), password.end(), p);
+    this->password = password;
+    this->salt = new CryptoPP::byte[saltLen];
+    this->saltLen = saltLen;
+    std::copy(salt, salt + saltLen, this->salt);
 
-    this->secret = new CryptoPP::byte[AES_KEY_LEN];
-    derivePassword(this->secret, this->secretLen, p, sizeof(p), salt, saltLen);
-
-    delete[] p;
+    this->populateSecret();
 }
+
 crypto::SymmetricKey::~SymmetricKey()
 {
     delete[] this->secret;
+    delete[] this->salt;
 }
+
+void crypto::SymmetricKey::populateSecret()
+{
+    if (this->secret != nullptr)
+        throw CryptoError("Secret already initialized");
+
+    this->secret = new CryptoPP::byte[AES_KEY_LEN];
+    this->secretLen = AES_KEY_LEN;
+
+    std::unique_ptr<CryptoPP::byte> p(new CryptoPP::byte[password.size()]);
+    std::copy(password.begin(), password.end(), p.get());
+
+    derivePassword(this->secret, this->secretLen,
+                   p.get(), sizeof(p.get()),
+                   this->salt, this->saltLen);
+};
 
 void crypto::SymmetricKey::encrypt(
     CryptoPP::byte *plain, size_t plainLen,
@@ -214,4 +246,14 @@ void crypto::SymmetricKey::decrypt(
 size_t crypto::SymmetricKey::calculateCipherLen(size_t plainLen)
 {
     return CryptoPP::RoundUpToMultipleOf(plainLen + AES_BLOCKSIZE, AES_BLOCKSIZE);
+}
+
+void crypto::SymmetricKey::saveSaltToFile(std::string saltSavePath)
+{
+    using namespace CryptoPP;
+    Base64Encoder encoder(new FileSink(saltSavePath.c_str()));
+
+    DEBUG("Save salt to `{}`", saltSavePath);
+    encoder.Put(this->salt, this->saltLen);
+    encoder.MessageEnd();
 }

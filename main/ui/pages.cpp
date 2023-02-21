@@ -110,12 +110,15 @@ NavInstruction EncryptionSetUpPage::load()
     unsigned int size = sizes[s];
     auto publicKeyPath = prepareAndProcessPath(config->encryption.rsaPublicKeyPath).u8string();
     auto privateKeyPath = prepareAndProcessPath(config->encryption.rsaPrivateKeyPath).u8string();
+    auto saltPath = prepareAndProcessPath(config->encryption.saltPath).u8string();
 
+    crypto::SymmetricKey symKey(password);
     crypto::RsaKey rsaKey;
     rsaKey.generate(size);
 
     rsaKey.saveToFile(crypto::KeyTypePublic, publicKeyPath);
-    rsaKey.saveToFile(crypto::KeyTypePrivate, privateKeyPath, password);
+    rsaKey.saveToFile(crypto::KeyTypePrivate, privateKeyPath, &symKey);
+    symKey.saveSaltToFile(saltPath);
 
     navInstruction.stepsBack = 1;
     return navInstruction;
