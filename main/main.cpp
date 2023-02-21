@@ -50,7 +50,7 @@ int main(int argc, char **argv)
         browser.load();
         INFO("Main browser ended");
     }
-    catch (exception ex)
+    catch (const exception &ex)
     {
         cout << "An error occured.\n"
              << "Open the log file at `"
