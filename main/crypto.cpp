@@ -114,6 +114,21 @@ void crypto::RsaKey::saveToFile(crypto::KeyType keyType, std::string path, std::
     file.MessageEnd();
 }
 
+bool crypto::RsaKey::validate(crypto::KeyType keyType)
+{
+    CryptoPP::AutoSeededRandomPool prng;
+    if (keyType == KeyTypePrivate)
+    {
+        if (this->privateKey == nullptr)
+            throw CryptoError("Cannot validate private key as it's not loaded or generated yet.");
+        return this->privateKey->Validate(prng, 2);
+    };
+
+    if (this->publicKey == nullptr)
+        throw CryptoError("Cannot validate public key as it's not loaded or generated yet.");
+    return this->publicKey->Validate(prng, 2);
+}
+
 void derivePassword(CryptoPP::byte *derived,
                     size_t derivedLen,
                     const CryptoPP::byte *password,
@@ -167,3 +182,36 @@ void crypto::SymmetricKey::encrypt(
                     e,
                     new ArraySink(cipher + iv.size(), cipherLen - iv.size())));
 };
+
+void crypto::SymmetricKey::decrypt(
+    CryptoPP::byte *cipher, size_t cipherLen,
+    CryptoPP::byte *plainBuffer, size_t plainBufferLen,
+    size_t *outputLen)
+{
+    using namespace CryptoPP;
+
+    byte iv[AES_BLOCKSIZE];
+    std::copy(cipher, cipher + AES_BLOCKSIZE, iv);
+
+    CBC_Mode<AES>::Decryption d;
+    d.SetKeyWithIV(this->secret, this->secretLen, iv);
+
+    MeterFilter meter(new ArraySink(plainBuffer, plainBufferLen));
+
+    ArraySource ar(cipher + AES_BLOCKSIZE,
+                   cipherLen - AES_BLOCKSIZE,
+                   true,
+                   new StreamTransformationFilter(
+                       d,
+                       new Redirector(meter)));
+
+    if (outputLen != nullptr)
+    {
+        *outputLen = meter.GetTotalBytes();
+    }
+};
+
+size_t crypto::SymmetricKey::calculateCipherLen(size_t plainLen)
+{
+    return CryptoPP::RoundUpToMultipleOf(plainLen + AES_BLOCKSIZE, AES_BLOCKSIZE);
+}
