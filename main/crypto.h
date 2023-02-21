@@ -30,6 +30,7 @@ namespace crypto
         size_t calculateCipherLen(size_t plainLen);
 
         void encrypt(CryptoPP::byte *plain, size_t plainLen, CryptoPP::byte *cipher, size_t cipherLen);
+        void encrypt(CryptoPP::ByteQueue *plain, CryptoPP::ByteQueue *cipher);
 
         /// @brief Decrypt cipher
         /// @param cipher

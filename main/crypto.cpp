@@ -50,12 +50,7 @@ void crypto::RsaKey::saveToFile(crypto::KeyType keyType, std::string path, Symme
     using namespace CryptoPP;
     FileSink file(path.c_str());
     ByteQueue q;
-    RSAFunction *key = nullptr;
-
-    if (keyType == KeyTypePrivate)
-        key = this->privateKey;
-    else
-        key = this->publicKey;
+    auto *key = keyType == KeyTypePrivate ? this->privateKey : this->publicKey;
 
     if (key == nullptr)
         throw CryptoError("Cannot save a private/public key that is not initialized");
@@ -66,37 +61,16 @@ void crypto::RsaKey::saveToFile(crypto::KeyType keyType, std::string path, Symme
 
     if (symKey != nullptr)
     {
-        auto plainLen = q.CurrentSize();
-        // TODO: Use secure bytes from CryptoPP
-        DEBUG("Copy key to a byte array for encryption");
-        byte *plain = new byte[plainLen];
-        q.Get(plain, plainLen);
-
-        auto cipherLen = symKey->calculateCipherLen(plainLen);
-        DEBUG("plainLen: `{} bytes`, cipherLen: `{} bytes`", plainLen, cipherLen);
-        byte *cipher = new byte[cipherLen];
-
-        INFO("Encrypt key");
-        symKey->encrypt(plain, plainLen, cipher, cipherLen);
-
-        DEBUG("Clear byte queue");
+        ByteQueue cipher;
+        symKey->encrypt(&q, &cipher);
         q.Clear();
-        DEBUG("Put encrypted key into byte queue");
-        q.Put(cipher, cipherLen);
-
-        delete[] plain;
-        delete[] cipher;
+        cipher.CopyTo(q);
     };
 
-    DEBUG("Copy from byte queue to base 64 encoder");
-    Base64Encoder encoder;
+    DEBUG("Copy from byte queue -> base 64 encoder -> file at `{}`", path);
+    Base64Encoder encoder(new Redirector(file));
     q.CopyTo(encoder);
     encoder.MessageEnd();
-
-    DEBUG("Copy from base 64 encoder to file at `{}`", path);
-    encoder.CopyTo(file);
-
-    file.MessageEnd();
 }
 
 bool crypto::RsaKey::validate(crypto::KeyType keyType)
@@ -193,6 +167,29 @@ void crypto::SymmetricKey::populateSecret()
                    this->salt, this->saltLen);
 };
 
+void crypto::SymmetricKey::encrypt(CryptoPP::ByteQueue *plain, CryptoPP::ByteQueue *cipher)
+{
+    using namespace CryptoPP;
+    auto inLen = plain->CurrentSize();
+
+    // TODO: Use secure bytes from CryptoPP
+    DEBUG("Copy key to a byte array for encryption");
+    byte *in = new byte[inLen];
+    plain->Get(in, inLen);
+
+    auto outLen = this->calculateCipherLen(inLen);
+    DEBUG("plainLen: `{} bytes`, cipherLen: `{} bytes`", inLen, outLen);
+    byte *out = new byte[outLen];
+
+    INFO("Encrypt key");
+    this->encrypt(in, inLen, out, outLen);
+
+    DEBUG("Put encrypted key into cipher byte queue");
+    cipher->Put(out, outLen);
+
+    delete[] in;
+    delete[] out;
+};
 void crypto::SymmetricKey::encrypt(
     CryptoPP::byte *plain, size_t plainLen,
     CryptoPP::byte *cipher, size_t cipherLen)
