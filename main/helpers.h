@@ -7,21 +7,21 @@
 
 std::string toUtf8(const std::wstring &wide);
 
-inline bool fileExists(const std::string &name)
-{
-    if (FILE *file = fopen(name.c_str(), "r"))
-    {
-        fclose(file);
-        return true;
-    }
-    else
-        return false;
-}
-
 bool isPathRelative(const std::string path);
 
 std::filesystem::path getExecutablePath();
 std::filesystem::path getExecutableDirPath();
+
+inline bool fileExists(const std::string &filepath)
+{
+    using namespace std::filesystem;
+    if (isPathRelative(filepath))
+    {
+        path p = getExecutableDirPath() / path(filepath);
+        return exists(p);
+    }
+    return exists(path(filepath));
+}
 
 /// @brief Create a processed path that is weakly canonical, and absolute.
 ///        A relative path is considered relative to the main program executable path.
