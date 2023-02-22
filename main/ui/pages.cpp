@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "autorun.h"
+#include "config.h"
 #include "constants.hpp"
 #include "crypto.h"
 #include "dev-logger.h"
@@ -119,6 +120,9 @@ NavInstruction EncryptionSetUpPage::load()
     rsaKey.saveToFile(crypto::KeyTypePublic, publicKeyPath);
     rsaKey.saveToFile(crypto::KeyTypePrivate, privateKeyPath, &symKey);
     symKey.saveSaltToFile(saltPath);
+
+    this->config->encryption.enabled = true;
+    saveConfig(config);
 
     navInstruction.stepsBack = 1;
     return navInstruction;
