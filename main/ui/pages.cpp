@@ -113,7 +113,7 @@ NavInstruction EncryptionSetUpPage::load()
     auto privateKeyPath = prepareAndProcessPath(config->encryption.rsaPrivateKeyPath).u8string();
     auto saltPath = prepareAndProcessPath(config->encryption.saltPath).u8string();
 
-    crypto::SymKey symKey(password);
+    crypto::SymKeyPasswordBased symKey(password);
     crypto::AsymKey asymKey;
     asymKey.generate(size);
 

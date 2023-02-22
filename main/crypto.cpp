@@ -136,7 +136,7 @@ void derivePassword(CryptoPP::byte *derived,
                     salt, saltLen, iterations);
 }
 
-crypto::SymKey::SymKey(std::string password)
+crypto::SymKeyPasswordBased::SymKeyPasswordBased(std::string password)
 {
     using namespace CryptoPP;
     DEBUG("Generate random salt");
@@ -149,7 +149,7 @@ crypto::SymKey::SymKey(std::string password)
 
     this->populateSecret();
 }
-crypto::SymKey::SymKey(std::string password, std::string saltSavePath)
+crypto::SymKeyPasswordBased::SymKeyPasswordBased(std::string password, std::string saltSavePath)
 {
     using namespace CryptoPP;
     this->password = password;
@@ -168,8 +168,7 @@ crypto::SymKey::SymKey(std::string password, std::string saltSavePath)
     this->populateSecret();
 };
 
-crypto::SymKey::SymKey(std::string password, CryptoPP::byte *salt, size_t saltLen)
-    : secretLen(AES_KEY_LEN)
+crypto::SymKeyPasswordBased::SymKeyPasswordBased(std::string password, CryptoPP::byte *salt, size_t saltLen)
 {
     this->password = password;
     this->salt = new CryptoPP::byte[saltLen];
@@ -179,13 +178,7 @@ crypto::SymKey::SymKey(std::string password, CryptoPP::byte *salt, size_t saltLe
     this->populateSecret();
 }
 
-crypto::SymKey::~SymKey()
-{
-    delete[] this->secret;
-    delete[] this->salt;
-}
-
-void crypto::SymKey::populateSecret()
+void crypto::SymKeyPasswordBased::populateSecret()
 {
     assert(this->secret == nullptr);
     assert(!this->password.empty());
@@ -205,6 +198,21 @@ void crypto::SymKey::populateSecret()
                    p.get(), password.size(),
                    this->salt, this->saltLen);
 };
+
+void crypto::SymKeyPasswordBased::saveSaltToFile(std::string saltSavePath)
+{
+    using namespace CryptoPP;
+    Base64Encoder encoder(new FileSink(saltSavePath.c_str()));
+
+    DEBUG("Save salt to `{}`", saltSavePath);
+    encoder.Put(this->salt, this->saltLen);
+    encoder.MessageEnd();
+}
+
+crypto::SymKeyPasswordBased::~SymKeyPasswordBased()
+{
+    delete[] this->salt;
+}
 
 void crypto::SymKey::encrypt(CryptoPP::ByteQueue *plain, CryptoPP::ByteQueue *cipher)
 {
@@ -306,12 +314,7 @@ size_t crypto::SymKey::calculateCipherLen(size_t plainLen)
     return CryptoPP::RoundUpToMultipleOf(plainLen + AES_BLOCKSIZE, AES_BLOCKSIZE);
 }
 
-void crypto::SymKey::saveSaltToFile(std::string saltSavePath)
+crypto::SymKey::~SymKey()
 {
-    using namespace CryptoPP;
-    Base64Encoder encoder(new FileSink(saltSavePath.c_str()));
-
-    DEBUG("Save salt to `{}`", saltSavePath);
-    encoder.Put(this->salt, this->saltLen);
-    encoder.MessageEnd();
+    delete[] this->secret;
 }

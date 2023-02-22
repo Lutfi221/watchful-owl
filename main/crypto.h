@@ -6,22 +6,12 @@ namespace crypto
 {
     class SymKey
     {
-    private:
+    protected:
         CryptoPP::byte *secret = nullptr;
         size_t secretLen = 0;
-        CryptoPP::byte *salt = nullptr;
-        size_t saltLen = 0;
-
-        std::string password = "";
-        void populateSecret();
 
     public:
-        SymKey(std::string password);
-        SymKey(std::string password, std::string saltSavePath);
-        SymKey(std::string password, CryptoPP::byte *salt, size_t saltLen);
         ~SymKey();
-
-        void generate(std::string password);
 
         /// @brief Calculate the needed cipher length from the plain length
         ///        while accounting for the IV and padding.
@@ -43,6 +33,22 @@ namespace crypto
             CryptoPP::byte *plainBuffer, size_t plainBufferLen,
             size_t *outputLen = nullptr);
         void decrypt(CryptoPP::ByteQueue *cipher, CryptoPP::ByteQueue *plain);
+    };
+
+    class SymKeyPasswordBased : public SymKey
+    {
+    private:
+        CryptoPP::byte *salt = nullptr;
+        size_t saltLen = 0;
+
+        std::string password = "";
+        void populateSecret();
+
+    public:
+        SymKeyPasswordBased(std::string password);
+        SymKeyPasswordBased(std::string password, std::string saltSavePath);
+        SymKeyPasswordBased(std::string password, CryptoPP::byte *salt, size_t saltLen);
+        ~SymKeyPasswordBased();
 
         void saveSaltToFile(std::string saltSavePath);
     };
