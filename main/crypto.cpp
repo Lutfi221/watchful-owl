@@ -142,6 +142,7 @@ crypto::SymmetricKey::SymmetricKey(std::string password)
     DEBUG("Generate random salt");
     AutoSeededRandomPool prng;
 
+    this->password = password;
     this->salt = new byte[SALT_LEN];
     this->saltLen = SALT_LEN;
     prng.GenerateBlock(salt, SALT_LEN);
@@ -186,6 +187,11 @@ crypto::SymmetricKey::~SymmetricKey()
 
 void crypto::SymmetricKey::populateSecret()
 {
+    assert(this->secret == nullptr);
+    assert(!this->password.empty());
+    assert(this->salt != nullptr);
+    assert(this->saltLen != 0);
+
     if (this->secret != nullptr)
         throw CryptoError("Secret already initialized");
 
