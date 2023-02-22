@@ -4,7 +4,7 @@
 
 namespace crypto
 {
-    class SymmetricKey
+    class SymKey
     {
     private:
         CryptoPP::byte *secret = nullptr;
@@ -16,10 +16,10 @@ namespace crypto
         void populateSecret();
 
     public:
-        SymmetricKey(std::string password);
-        SymmetricKey(std::string password, std::string saltSavePath);
-        SymmetricKey(std::string password, CryptoPP::byte *salt, size_t saltLen);
-        ~SymmetricKey();
+        SymKey(std::string password);
+        SymKey(std::string password, std::string saltSavePath);
+        SymKey(std::string password, CryptoPP::byte *salt, size_t saltLen);
+        ~SymKey();
 
         void generate(std::string password);
 
@@ -53,14 +53,14 @@ namespace crypto
         KeyTypePrivate
     };
 
-    class AsymmetricKey
+    class AsymKey
     {
     private:
         CryptoPP::RSA::PrivateKey *privateKey = nullptr;
         CryptoPP::RSA::PublicKey *publicKey = nullptr;
 
     public:
-        ~AsymmetricKey();
+        ~AsymKey();
 
         /// @brief Generate and populate public and private RSA key.
         ///        If `RsaKey` is NOT empty, it will throw a `CryptoError`.
@@ -71,8 +71,8 @@ namespace crypto
         /// @param keyType Key type (private/public)
         /// @param path Path to file
         /// @param symKey Symmetric key used to encrypt the key
-        void saveToFile(KeyType keyType, std::string path, SymmetricKey *symKey = nullptr);
-        void loadFromFile(KeyType keyType, std::string path, SymmetricKey *symKey = nullptr);
+        void saveToFile(KeyType keyType, std::string path, SymKey *symKey = nullptr);
+        void loadFromFile(KeyType keyType, std::string path, SymKey *symKey = nullptr);
 
         bool validate(KeyType keyType);
     };

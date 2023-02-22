@@ -22,13 +22,13 @@
 #define SALT_LEN 32
 #define PBKDF2_ITERATIONS 1024
 
-crypto::AsymmetricKey::~AsymmetricKey()
+crypto::AsymKey::~AsymKey()
 {
     delete this->privateKey;
     delete this->publicKey;
 }
 
-void crypto::AsymmetricKey::generate(unsigned int size)
+void crypto::AsymKey::generate(unsigned int size)
 {
     using namespace CryptoPP;
     if (this->publicKey != nullptr || this->privateKey != nullptr)
@@ -45,7 +45,7 @@ void crypto::AsymmetricKey::generate(unsigned int size)
     INFO("Time taken to generate RSA key pair: `{:.3} seconds`", sw);
 }
 
-void crypto::AsymmetricKey::saveToFile(crypto::KeyType keyType, std::string path, SymmetricKey *symKey)
+void crypto::AsymKey::saveToFile(crypto::KeyType keyType, std::string path, SymKey *symKey)
 {
     using namespace CryptoPP;
     FileSink file(path.c_str());
@@ -73,7 +73,7 @@ void crypto::AsymmetricKey::saveToFile(crypto::KeyType keyType, std::string path
     encoder.MessageEnd();
 }
 
-void crypto::AsymmetricKey::loadFromFile(crypto::KeyType keyType, std::string path, crypto::SymmetricKey *symKey)
+void crypto::AsymKey::loadFromFile(crypto::KeyType keyType, std::string path, crypto::SymKey *symKey)
 {
     using namespace CryptoPP;
     std::unique_ptr<ByteQueue> q(new ByteQueue);
@@ -105,7 +105,7 @@ void crypto::AsymmetricKey::loadFromFile(crypto::KeyType keyType, std::string pa
     return;
 }
 
-bool crypto::AsymmetricKey::validate(crypto::KeyType keyType)
+bool crypto::AsymKey::validate(crypto::KeyType keyType)
 {
     CryptoPP::AutoSeededRandomPool prng;
     if (keyType == KeyTypePrivate)
@@ -136,7 +136,7 @@ void derivePassword(CryptoPP::byte *derived,
                     salt, saltLen, iterations);
 }
 
-crypto::SymmetricKey::SymmetricKey(std::string password)
+crypto::SymKey::SymKey(std::string password)
 {
     using namespace CryptoPP;
     DEBUG("Generate random salt");
@@ -149,7 +149,7 @@ crypto::SymmetricKey::SymmetricKey(std::string password)
 
     this->populateSecret();
 }
-crypto::SymmetricKey::SymmetricKey(std::string password, std::string saltSavePath)
+crypto::SymKey::SymKey(std::string password, std::string saltSavePath)
 {
     using namespace CryptoPP;
     this->password = password;
@@ -168,7 +168,7 @@ crypto::SymmetricKey::SymmetricKey(std::string password, std::string saltSavePat
     this->populateSecret();
 };
 
-crypto::SymmetricKey::SymmetricKey(std::string password, CryptoPP::byte *salt, size_t saltLen)
+crypto::SymKey::SymKey(std::string password, CryptoPP::byte *salt, size_t saltLen)
     : secretLen(AES_KEY_LEN)
 {
     this->password = password;
@@ -179,13 +179,13 @@ crypto::SymmetricKey::SymmetricKey(std::string password, CryptoPP::byte *salt, s
     this->populateSecret();
 }
 
-crypto::SymmetricKey::~SymmetricKey()
+crypto::SymKey::~SymKey()
 {
     delete[] this->secret;
     delete[] this->salt;
 }
 
-void crypto::SymmetricKey::populateSecret()
+void crypto::SymKey::populateSecret()
 {
     assert(this->secret == nullptr);
     assert(!this->password.empty());
@@ -206,7 +206,7 @@ void crypto::SymmetricKey::populateSecret()
                    this->salt, this->saltLen);
 };
 
-void crypto::SymmetricKey::encrypt(CryptoPP::ByteQueue *plain, CryptoPP::ByteQueue *cipher)
+void crypto::SymKey::encrypt(CryptoPP::ByteQueue *plain, CryptoPP::ByteQueue *cipher)
 {
     using namespace CryptoPP;
     auto inLen = plain->CurrentSize();
@@ -229,7 +229,7 @@ void crypto::SymmetricKey::encrypt(CryptoPP::ByteQueue *plain, CryptoPP::ByteQue
     delete[] in;
     delete[] out;
 };
-void crypto::SymmetricKey::encrypt(
+void crypto::SymKey::encrypt(
     CryptoPP::byte *plain, size_t plainLen,
     CryptoPP::byte *cipher, size_t cipherLen)
 {
@@ -251,7 +251,7 @@ void crypto::SymmetricKey::encrypt(
                     new ArraySink(cipher + iv.size(), cipherLen - iv.size())));
 };
 
-void crypto::SymmetricKey::decrypt(CryptoPP::ByteQueue *cipher, CryptoPP::ByteQueue *plain)
+void crypto::SymKey::decrypt(CryptoPP::ByteQueue *cipher, CryptoPP::ByteQueue *plain)
 {
     using namespace CryptoPP;
     auto inLen = cipher->CurrentSize();
@@ -273,7 +273,7 @@ void crypto::SymmetricKey::decrypt(CryptoPP::ByteQueue *cipher, CryptoPP::ByteQu
     delete[] in;
     delete[] outBuffer;
 };
-void crypto::SymmetricKey::decrypt(
+void crypto::SymKey::decrypt(
     CryptoPP::byte *cipher, size_t cipherLen,
     CryptoPP::byte *plainBuffer, size_t plainBufferLen,
     size_t *outputLen)
@@ -301,12 +301,12 @@ void crypto::SymmetricKey::decrypt(
     }
 };
 
-size_t crypto::SymmetricKey::calculateCipherLen(size_t plainLen)
+size_t crypto::SymKey::calculateCipherLen(size_t plainLen)
 {
     return CryptoPP::RoundUpToMultipleOf(plainLen + AES_BLOCKSIZE, AES_BLOCKSIZE);
 }
 
-void crypto::SymmetricKey::saveSaltToFile(std::string saltSavePath)
+void crypto::SymKey::saveSaltToFile(std::string saltSavePath)
 {
     using namespace CryptoPP;
     Base64Encoder encoder(new FileSink(saltSavePath.c_str()));
