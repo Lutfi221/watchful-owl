@@ -73,6 +73,38 @@ void crypto::RsaKey::saveToFile(crypto::KeyType keyType, std::string path, Symme
     encoder.MessageEnd();
 }
 
+void crypto::RsaKey::loadFromFile(crypto::KeyType keyType, std::string path, crypto::SymmetricKey *symKey)
+{
+    using namespace CryptoPP;
+    std::unique_ptr<ByteQueue> q(new ByteQueue);
+    Base64Decoder decoder(new Redirector(*(q.get())));
+
+    DEBUG("Read file `{}` -> decode base 64 -> byte queue", path);
+    FileSource fs(path.c_str(), true, new Redirector(decoder));
+    decoder.MessageEnd();
+
+    if (symKey != nullptr)
+    {
+        std::unique_ptr<ByteQueue> plain(new ByteQueue);
+        DEBUG("Decrypt key");
+        symKey->decrypt(q.get(), plain.get());
+        q.swap(plain);
+    }
+
+    if (keyType == KeyTypePrivate)
+    {
+        assert(this->privateKey == nullptr);
+        this->privateKey = new RSA::PrivateKey;
+        this->privateKey->Load(*(q.get()));
+        return;
+    };
+
+    assert(this->publicKey == nullptr);
+    this->publicKey = new RSA::PublicKey;
+    this->publicKey->Load(*(q.get()));
+    return;
+}
+
 bool crypto::RsaKey::validate(crypto::KeyType keyType)
 {
     CryptoPP::AutoSeededRandomPool prng;
@@ -174,7 +206,7 @@ void crypto::SymmetricKey::encrypt(CryptoPP::ByteQueue *plain, CryptoPP::ByteQue
     auto inLen = plain->CurrentSize();
 
     // TODO: Use secure bytes from CryptoPP
-    DEBUG("Copy key to a byte array for encryption");
+    DEBUG("Copy message to a byte array for encryption");
     byte *in = new byte[inLen];
     plain->Get(in, inLen);
 
@@ -218,7 +250,7 @@ void crypto::SymmetricKey::decrypt(CryptoPP::ByteQueue *cipher, CryptoPP::ByteQu
     using namespace CryptoPP;
     auto inLen = cipher->CurrentSize();
 
-    DEBUG("Copy key to a byte array for decryption");
+    DEBUG("Copy message to a byte array for decryption");
     byte *in = new byte[inLen];
     cipher->Get(in, inLen);
 
@@ -229,8 +261,8 @@ void crypto::SymmetricKey::decrypt(CryptoPP::ByteQueue *cipher, CryptoPP::ByteQu
     DEBUG("Decrypt message");
     this->decrypt(in, inLen, outBuffer, outBufferLen, &actualOutLen);
 
-    DEBUG("Put decrypted message into cipher byte queue");
-    cipher->Put(outBuffer, actualOutLen);
+    DEBUG("Put decrypted message into plain byte queue");
+    plain->Put(outBuffer, actualOutLen);
 
     delete[] in;
     delete[] outBuffer;

@@ -72,6 +72,7 @@ namespace crypto
         /// @param path Path to file
         /// @param symKey Symmetric key used to encrypt the key
         void saveToFile(KeyType keyType, std::string path, SymmetricKey *symKey = nullptr);
+        void loadFromFile(KeyType keyType, std::string path, SymmetricKey *symKey = nullptr);
 
         bool validate(KeyType keyType);
     };
