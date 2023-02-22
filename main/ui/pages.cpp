@@ -149,6 +149,8 @@ NavInstruction EncryptionConfigPage::load()
     std::string desc;
     EncryptionStatus encryptionStatus;
 
+    std::vector<std::string> entries = {"", "Back"};
+
     auto publicKeyPath = config->encryption.rsaPublicKeyPath;
     bool keyFileExists = fileExists(publicKeyPath);
     auto encryptionEnabled = config->encryption.enabled;
@@ -157,23 +159,20 @@ NavInstruction EncryptionConfigPage::load()
     {
         desc = "Logging encryption is enabled";
         encryptionStatus = EncryptionEnabled;
+        entries.at(0) = "Disable logging encryption";
     }
     else if (!keyFileExists && encryptionEnabled)
     {
         desc = "RSA public key is missing, logging encryption is disabled.";
         encryptionStatus = EncryptionIncomplete;
+        entries.at(0) = "Generate a new RSA key pair";
     }
     else
     {
         desc = "Logging encryption is disabled";
         encryptionStatus = EncryptionDisabled;
+        entries.at(0) = "Enable logging encryption";
     }
-
-    std::vector<std::string> entries = {
-        encryptionEnabled
-            ? "Disable Logging Encryption Temporarily"
-            : "Enable Logging Encryption",
-        "Back"};
 
     int s = promptSelection(
         this->screen, &entries, "Encryption Configuration", desc);
@@ -184,6 +183,13 @@ NavInstruction EncryptionConfigPage::load()
         if (encryptionStatus == EncryptionEnabled)
         {
             config->encryption.enabled = false;
+            saveConfig(config);
+            navInstruction.flag = NavReload;
+            break;
+        }
+        if (keyFileExists)
+        {
+            config->encryption.enabled = true;
             saveConfig(config);
             navInstruction.flag = NavReload;
             break;
