@@ -123,14 +123,15 @@ crypto::SymmetricKey::SymmetricKey(std::string password, std::string saltSavePat
 
     DEBUG("Read salt file `{}`", saltSavePath);
     ByteQueue q;
-    FileSource fs(saltSavePath.c_str(), true, new Base64Decoder(new Redirector(q)));
-    fs.MessageEnd();
+    Base64Decoder decoder(new Redirector(q));
+    FileSource fs(saltSavePath.c_str(), true, new Redirector(decoder));
+    decoder.MessageEnd();
 
     this->saltLen = q.CurrentSize();
     DEBUG("Salt length: {} bytes", this->saltLen);
 
-    this->salt = new byte[saltLen];
-    fs.Get(this->salt, this->saltLen);
+    this->salt = new byte[this->saltLen];
+    q.Get(this->salt, this->saltLen);
     this->populateSecret();
 };
 
@@ -163,7 +164,7 @@ void crypto::SymmetricKey::populateSecret()
     std::copy(password.begin(), password.end(), p.get());
 
     derivePassword(this->secret, this->secretLen,
-                   p.get(), sizeof(p.get()),
+                   p.get(), password.size(),
                    this->salt, this->saltLen);
 };
 
