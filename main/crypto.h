@@ -53,14 +53,14 @@ namespace crypto
         KeyTypePrivate
     };
 
-    class RsaKey
+    class AsymmetricKey
     {
     private:
         CryptoPP::RSA::PrivateKey *privateKey = nullptr;
         CryptoPP::RSA::PublicKey *publicKey = nullptr;
 
     public:
-        ~RsaKey();
+        ~AsymmetricKey();
 
         /// @brief Generate and populate public and private RSA key.
         ///        If `RsaKey` is NOT empty, it will throw a `CryptoError`.

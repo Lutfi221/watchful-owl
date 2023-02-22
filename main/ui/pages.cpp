@@ -114,11 +114,11 @@ NavInstruction EncryptionSetUpPage::load()
     auto saltPath = prepareAndProcessPath(config->encryption.saltPath).u8string();
 
     crypto::SymmetricKey symKey(password);
-    crypto::RsaKey rsaKey;
-    rsaKey.generate(size);
+    crypto::AsymmetricKey asymKey;
+    asymKey.generate(size);
 
-    rsaKey.saveToFile(crypto::KeyTypePublic, publicKeyPath);
-    rsaKey.saveToFile(crypto::KeyTypePrivate, privateKeyPath, &symKey);
+    asymKey.saveToFile(crypto::KeyTypePublic, publicKeyPath);
+    asymKey.saveToFile(crypto::KeyTypePrivate, privateKeyPath, &symKey);
     symKey.saveSaltToFile(saltPath);
 
     this->config->encryption.enabled = true;

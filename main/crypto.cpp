@@ -22,13 +22,13 @@
 #define SALT_LEN 32
 #define PBKDF2_ITERATIONS 1024
 
-crypto::RsaKey::~RsaKey()
+crypto::AsymmetricKey::~AsymmetricKey()
 {
     delete this->privateKey;
     delete this->publicKey;
 }
 
-void crypto::RsaKey::generate(unsigned int size)
+void crypto::AsymmetricKey::generate(unsigned int size)
 {
     using namespace CryptoPP;
     if (this->publicKey != nullptr || this->privateKey != nullptr)
@@ -45,7 +45,7 @@ void crypto::RsaKey::generate(unsigned int size)
     INFO("Time taken to generate RSA key pair: `{:.3} seconds`", sw);
 }
 
-void crypto::RsaKey::saveToFile(crypto::KeyType keyType, std::string path, SymmetricKey *symKey)
+void crypto::AsymmetricKey::saveToFile(crypto::KeyType keyType, std::string path, SymmetricKey *symKey)
 {
     using namespace CryptoPP;
     FileSink file(path.c_str());
@@ -73,7 +73,7 @@ void crypto::RsaKey::saveToFile(crypto::KeyType keyType, std::string path, Symme
     encoder.MessageEnd();
 }
 
-void crypto::RsaKey::loadFromFile(crypto::KeyType keyType, std::string path, crypto::SymmetricKey *symKey)
+void crypto::AsymmetricKey::loadFromFile(crypto::KeyType keyType, std::string path, crypto::SymmetricKey *symKey)
 {
     using namespace CryptoPP;
     std::unique_ptr<ByteQueue> q(new ByteQueue);
@@ -105,7 +105,7 @@ void crypto::RsaKey::loadFromFile(crypto::KeyType keyType, std::string path, cry
     return;
 }
 
-bool crypto::RsaKey::validate(crypto::KeyType keyType)
+bool crypto::AsymmetricKey::validate(crypto::KeyType keyType)
 {
     CryptoPP::AutoSeededRandomPool prng;
     if (keyType == KeyTypePrivate)
