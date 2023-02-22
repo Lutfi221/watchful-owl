@@ -42,6 +42,7 @@ namespace crypto
             CryptoPP::byte *cipher, size_t cipherLen,
             CryptoPP::byte *plainBuffer, size_t plainBufferLen,
             size_t *outputLen = nullptr);
+        void decrypt(CryptoPP::ByteQueue *cipher, CryptoPP::ByteQueue *plain);
 
         void saveSaltToFile(std::string saltSavePath);
     };

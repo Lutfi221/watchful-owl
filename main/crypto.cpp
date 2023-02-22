@@ -181,10 +181,10 @@ void crypto::SymmetricKey::encrypt(CryptoPP::ByteQueue *plain, CryptoPP::ByteQue
     DEBUG("plainLen: `{} bytes`, cipherLen: `{} bytes`", inLen, outLen);
     byte *out = new byte[outLen];
 
-    INFO("Encrypt key");
+    DEBUG("Encrypt message");
     this->encrypt(in, inLen, out, outLen);
 
-    DEBUG("Put encrypted key into cipher byte queue");
+    DEBUG("Put encrypted message into cipher byte queue");
     cipher->Put(out, outLen);
 
     delete[] in;
@@ -212,6 +212,28 @@ void crypto::SymmetricKey::encrypt(
                     new ArraySink(cipher + iv.size(), cipherLen - iv.size())));
 };
 
+void crypto::SymmetricKey::decrypt(CryptoPP::ByteQueue *cipher, CryptoPP::ByteQueue *plain)
+{
+    using namespace CryptoPP;
+    auto inLen = cipher->CurrentSize();
+
+    DEBUG("Copy key to a byte array for decryption");
+    byte *in = new byte[inLen];
+    cipher->Get(in, inLen);
+
+    size_t actualOutLen;
+    auto outBufferLen = inLen;
+    byte *outBuffer = new byte[outBufferLen];
+
+    DEBUG("Decrypt message");
+    this->decrypt(in, inLen, outBuffer, outBufferLen, &actualOutLen);
+
+    DEBUG("Put decrypted message into cipher byte queue");
+    cipher->Put(outBuffer, actualOutLen);
+
+    delete[] in;
+    delete[] outBuffer;
+};
 void crypto::SymmetricKey::decrypt(
     CryptoPP::byte *cipher, size_t cipherLen,
     CryptoPP::byte *plainBuffer, size_t plainBufferLen,
