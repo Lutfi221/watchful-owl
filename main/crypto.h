@@ -11,6 +11,13 @@ namespace crypto
         size_t secretLen = 0;
 
     public:
+        /// @brief Generate a symmetric key with a random secret.
+        explicit SymKey();
+
+        /// @brief Create a symmetric key.
+        /// @param secret Secret key
+        /// @param secretLen Length (in bytes) of the secret key
+        SymKey(CryptoPP::byte *secret, size_t secretLen);
         ~SymKey();
 
         /// @brief Calculate the needed cipher length from the plain length

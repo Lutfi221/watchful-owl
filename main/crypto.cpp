@@ -214,6 +214,22 @@ crypto::SymKeyPasswordBased::~SymKeyPasswordBased()
     delete[] this->salt;
 }
 
+crypto::SymKey::SymKey()
+{
+    using namespace CryptoPP;
+    AutoSeededRandomPool prng;
+
+    this->secret = new byte[AES_KEY_LEN];
+    this->secretLen = AES_KEY_LEN;
+    prng.GenerateBlock(this->secret, this->secretLen);
+}
+crypto::SymKey::SymKey(CryptoPP::byte *secret, size_t secretLen)
+{
+    this->secret = new CryptoPP::byte[secretLen];
+    this->secretLen = secretLen;
+    std::copy(secret, secret + secretLen, this->secret);
+}
+
 void crypto::SymKey::encrypt(CryptoPP::ByteQueue *plain, CryptoPP::ByteQueue *cipher)
 {
     using namespace CryptoPP;
