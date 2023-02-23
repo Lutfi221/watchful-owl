@@ -28,15 +28,21 @@ inline bool fileExists(const std::string &filepath)
 ///        This does not mutate path.
 /// @param path Path to be processed.
 /// @param createDirs Should directories be created if they're missing.
+/// @param isDir Does the path point to a directory?
 /// @return Processed path
-std::filesystem::path prepareAndProcessPath(std::string path, bool createDirs = true);
+std::filesystem::path prepareAndProcessPath(
+    std::string path, bool createDirs = true,
+    bool isDir = false);
 /// @brief Create a processed path that is weakly canonical, and absolute.
 ///        A relative path is considered relative to the main program executable path.
 ///        This does not mutate path.
 /// @param path Path to be processed.
 /// @param createDirs Should directories be created if they're missing.
+/// @param isDir Does the path point to a directory?
 /// @return Processed path
-std::filesystem::path prepareAndProcessPath(std::filesystem::path path, bool createDirs = true);
+std::filesystem::path prepareAndProcessPath(
+    std::filesystem::path path, bool createDirs = true,
+    bool isDir = false);
 
 void killOtherPerpetualInstances();
 void killAllPerpetualInstances();

@@ -37,20 +37,24 @@ std::filesystem::path getExecutableDirPath()
     return getExecutablePath().remove_filename();
 }
 
-std::filesystem::path prepareAndProcessPath(std::string path, bool createDirs)
+std::filesystem::path prepareAndProcessPath(std::string path, bool createDirs, bool isDir)
 {
     return prepareAndProcessPath(std::filesystem::path(path), createDirs);
 }
-std::filesystem::path prepareAndProcessPath(std::filesystem::path path, bool createDirs)
+std::filesystem::path prepareAndProcessPath(std::filesystem::path in, bool createDirs, bool isDir)
 {
-    std::filesystem::path out;
-    if (path.is_relative())
-        out = getExecutableDirPath() / path;
+    using namespace std::filesystem;
+    path out;
+    if (in.is_relative())
+        out = getExecutableDirPath() / in;
     else
-        out = path;
+        out = in;
 
     if (createDirs)
-        std::filesystem::create_directories(out.parent_path());
+        if (isDir)
+            create_directories(out);
+        else
+            create_directories(out.parent_path());
 
     return std::filesystem::weakly_canonical(out);
 }
