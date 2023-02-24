@@ -46,7 +46,7 @@ nlohmann::json generateBasicLogEntry(time_t timestamp)
 logger::Logger::Logger(Config *config)
 {
     this->config = config;
-    this->outDir = prepareAndProcessPath(config->outDir);
+    this->outDir = prepareAndProcessPath(config->outDir, true, true);
 
     if (config->encryption.enabled)
     {
