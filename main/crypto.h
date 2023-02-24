@@ -95,6 +95,9 @@ namespace crypto
         size_t calculateCipherLen();
 
         void encrypt(CryptoPP::byte *plain, size_t plainLen, CryptoPP::byte *cipher, size_t cipherLen);
+        void decrypt(CryptoPP::byte *cipher, size_t cipherLen,
+                     CryptoPP::byte *plain, size_t plainLen,
+                     size_t *outputLen = nullptr);
     };
 
     class CryptoError : public std::runtime_error

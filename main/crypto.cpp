@@ -64,6 +64,27 @@ void crypto::AsymKey::encrypt(
     encryptor.Encrypt(prng, plain, plainLen, cipher);
 }
 
+void crypto::AsymKey::decrypt(CryptoPP::byte *cipher, size_t cipherLen,
+                              CryptoPP::byte *plain, size_t plainLen,
+                              size_t *outputLen = nullptr)
+{
+    using namespace CryptoPP;
+    assert(this->privateKey != nullptr);
+
+    AutoSeededRandomPool prng;
+    RSAES<OAEP<SHA256>>::Decryptor decryptor(*this->privateKey);
+
+    assert(0 != decryptor.FixedCiphertextLength());
+    assert(cipherLen <= decryptor.FixedCiphertextLength());
+    assert(plainLen >= decryptor.MaxPlaintextLength(cipherLen));
+
+    DecodingResult result = decryptor.Decrypt(prng, cipher, cipherLen, plain);
+    assert(result.isValidCoding);
+    assert(result.messageLength <= decryptor.MaxPlaintextLength(cipherLen));
+
+    *outputLen = result.messageLength;
+}
+
 void crypto::AsymKey::saveToFile(crypto::KeyType keyType, std::string path, SymKey *symKey)
 {
     using namespace CryptoPP;
