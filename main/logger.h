@@ -1,6 +1,7 @@
 #ifndef MAIN_LOGGER
 #define MAIN_LOGGER
 #include <filesystem>
+#include <fstream>
 #include <time.h>
 
 #include "json.hpp"
@@ -42,11 +43,20 @@ namespace logger
         std::string prepareLogFile(time_t timestamp);
         void appendBinary(DataType type, unsigned char *data, size_t dataLen, std::ofstream *fileStream);
 
+        /// @brief Append current symmetric key to file stream encrypted with public key.
+        void appendSymKey(std::ofstream *fileStream);
+        void generateAndAppendSymKey(std::string logPath);
+        void generateAndAppendSymKey(std::ofstream *fileStream);
+
     public:
         Logger(Config *config);
         ~Logger();
 
+        /// @brief Capture and append a json entry to the log file.
+        ///        It also appends the secret AES key
+        ///        and rotates it when necessery.
         void captureAndAppend();
+
         /// @brief Capture a log snapshot.
         /// @param timestamp Current time in UNIX
         /// @param durationSinceLastInput Seconds since last user input or interaction

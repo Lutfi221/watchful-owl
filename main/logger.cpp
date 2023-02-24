@@ -66,6 +66,20 @@ void logger::Logger::captureAndAppend()
     std::string logPath = this->prepareLogFile(timestamp);
 
     auto logEntry = this->capture(timestamp, getDurationSinceLastInput());
+
+    if (this->config->encryption.enabled)
+    {
+        if (this->rotatingSymKey == nullptr)
+            this->generateAndAppendSymKey(logPath);
+        else if (this->logsSinceLatestKeyGen >= this->config->encryption.keyGenRate)
+        {
+            this->generateAndAppendSymKey(logPath);
+            this->logsSinceLatestKeyGen = 0;
+        }
+        else
+            this->logsSinceLatestKeyGen++;
+    }
+
     this->append(logEntry, logPath, this->config->encryption.enabled);
 }
 
@@ -96,10 +110,20 @@ void logger::Logger::append(nlohmann::json entry, std::string logPath, bool encr
 
     std::ofstream logFile(logPath, std::ios::binary | std::ios::out | std::ios_base::app);
 
+    assert(this->rotatingSymKey != nullptr);
+
     std::string jsonStr(entry.dump());
-    this->appendBinary(DataTypeJson,
-                       (unsigned char *)jsonStr.c_str(),
-                       jsonStr.size(), &logFile);
+
+    size_t cipherLen = this->rotatingSymKey->calculateCipherLen(jsonStr.size());
+    unsigned char cipher[cipherLen];
+
+    this->rotatingSymKey->encrypt(
+        (unsigned char *)jsonStr.c_str(),
+        jsonStr.size(),
+        &cipher[0],
+        cipherLen);
+
+    this->appendBinary(DataTypeJson, &cipher[0], cipherLen, &logFile);
 }
 
 void logger::Logger::appendBinary(logger::DataType type, unsigned char *data,
@@ -158,6 +182,32 @@ std::string logger::Logger::prepareLogFile(time_t timestamp)
     f.write(&logfileVersion, 1);
 
     return logPath.u8string();
+}
+
+void logger::Logger::generateAndAppendSymKey(std::ofstream *fileStream)
+{
+    delete this->rotatingSymKey;
+    this->rotatingSymKey = new crypto::SymKey();
+    this->appendSymKey(fileStream);
+}
+void logger::Logger::generateAndAppendSymKey(std::string logPath)
+{
+    std::ofstream f(logPath, std::ios::out | std::ios_base::app);
+    this->generateAndAppendSymKey(&f);
+}
+
+void logger::Logger::appendSymKey(std::ofstream *fileStream)
+{
+    size_t secretLen = this->rotatingSymKey->getSecretLen();
+    unsigned char secret[secretLen];
+    this->rotatingSymKey->getSecret(secret, secretLen);
+
+    size_t cipherLen = this->asymKey->calculateCipherLen();
+    unsigned char cipher[cipherLen];
+
+    this->asymKey->encrypt(secret, secretLen, &cipher[0], cipherLen);
+
+    this->appendBinary(DataTypeSymKey, &cipher[0], cipherLen, fileStream);
 }
 
 logger::Logger::~Logger()
