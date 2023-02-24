@@ -87,14 +87,14 @@ nlohmann::json logger::Logger::capture(time_t timestamp, unsigned int durationSi
 
 void logger::Logger::append(nlohmann::json entry, std::string logPath, bool encryptedBinary)
 {
-    std::ofstream logFile;
-    logFile.open(logPath, std::ios::out | std::ios_base::app);
-    if (logFile.fail())
-        throw std::ios_base::failure(std::strerror(errno));
-
     if (!encryptedBinary)
+    {
+        std::ofstream logFile(logPath, std::ios::out | std::ios_base::app);
         logFile << "\n"
                 << entry.dump();
+    }
+
+    std::ofstream logFile(logPath, std::ios::binary | std::ios::out | std::ios_base::app);
 
     std::string jsonStr(entry.dump());
     this->appendBinary(DataTypeJson,
@@ -152,8 +152,10 @@ std::string logger::Logger::prepareLogFile(time_t timestamp)
     DEBUG("Create encrypted log file for the day and "
           "put a version specifier on the first byte.");
     this->lastAppendDate = date;
-    std::ofstream f(logPath, std::ios::binary);
-    f << ENC_LOGFILE_VERSION;
+    std::ofstream f(logPath, std::ios::binary | std::ios::out | std::ios_base::app);
+
+    char logfileVersion = ENC_LOGFILE_VERSION;
+    f.write(&logfileVersion, 1);
 
     return logPath.u8string();
 }
