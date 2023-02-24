@@ -66,7 +66,7 @@ void crypto::AsymKey::encrypt(
 
 void crypto::AsymKey::decrypt(CryptoPP::byte *cipher, size_t cipherLen,
                               CryptoPP::byte *plain, size_t plainLen,
-                              size_t *outputLen = nullptr)
+                              size_t *outputLen)
 {
     using namespace CryptoPP;
     assert(this->privateKey != nullptr);
