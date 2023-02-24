@@ -39,7 +39,7 @@ std::filesystem::path getExecutableDirPath()
 
 std::filesystem::path prepareAndProcessPath(std::string path, bool createDirs, bool isDir)
 {
-    return prepareAndProcessPath(std::filesystem::path(path), createDirs);
+    return prepareAndProcessPath(std::filesystem::path(path), createDirs, isDir);
 }
 std::filesystem::path prepareAndProcessPath(std::filesystem::path in, bool createDirs, bool isDir)
 {

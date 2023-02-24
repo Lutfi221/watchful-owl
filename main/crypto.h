@@ -20,6 +20,9 @@ namespace crypto
         SymKey(CryptoPP::byte *secret, size_t secretLen);
         ~SymKey();
 
+        size_t getSecretLen();
+        void getSecret(CryptoPP::byte *secretBuffer, size_t secretBufferLen);
+
         /// @brief Calculate the needed cipher length from the plain length
         ///        while accounting for the IV and padding.
         /// @param plainLen Length (in bytes) of plain data.
@@ -71,6 +74,7 @@ namespace crypto
     private:
         CryptoPP::RSA::PrivateKey *privateKey = nullptr;
         CryptoPP::RSA::PublicKey *publicKey = nullptr;
+        size_t cipherLen = 0;
 
     public:
         ~AsymKey();
@@ -88,6 +92,12 @@ namespace crypto
         void loadFromFile(KeyType keyType, std::string path, SymKey *symKey = nullptr);
 
         bool validate(KeyType keyType);
+        size_t calculateCipherLen();
+
+        void encrypt(CryptoPP::byte *plain, size_t plainLen, CryptoPP::byte *cipher, size_t cipherLen);
+        void decrypt(CryptoPP::byte *cipher, size_t cipherLen,
+                     CryptoPP::byte *plain, size_t plainLen,
+                     size_t *outputLen = nullptr);
     };
 
     class CryptoError : public std::runtime_error

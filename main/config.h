@@ -8,6 +8,9 @@ struct EncryptionConfig
     std::string rsaPublicKeyPath = "./crypto/main.rsa-public.data";
     std::string rsaPrivateKeyPath = "./crypto/main.rsa-private.data.enc";
     std::string saltPath = "./crypto/main.salt.data";
+    // How often to generate a new AES key for log encryption.
+    // In the units of `number of key generations per log entries`.
+    unsigned int keyGenRate = 60;
     bool enabled = false;
 };
 

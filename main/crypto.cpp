@@ -45,6 +45,46 @@ void crypto::AsymKey::generate(unsigned int size)
     INFO("Time taken to generate RSA key pair: `{:.3} seconds`", sw);
 }
 
+void crypto::AsymKey::encrypt(
+    CryptoPP::byte *plain, size_t plainLen,
+    CryptoPP::byte *cipher, size_t cipherLen)
+{
+    using namespace CryptoPP;
+    assert(this->publicKey != nullptr);
+
+    AutoSeededRandomPool prng;
+    RSAES<OAEP<SHA256>>::Encryptor encryptor(*this->publicKey);
+
+    assert(0 != encryptor.FixedMaxPlaintextLength());
+    assert(plainLen <= encryptor.FixedMaxPlaintextLength());
+
+    size_t actualCipherLen = encryptor.CiphertextLength(plainLen);
+    assert(cipherLen >= actualCipherLen);
+
+    encryptor.Encrypt(prng, plain, plainLen, cipher);
+}
+
+void crypto::AsymKey::decrypt(CryptoPP::byte *cipher, size_t cipherLen,
+                              CryptoPP::byte *plain, size_t plainLen,
+                              size_t *outputLen = nullptr)
+{
+    using namespace CryptoPP;
+    assert(this->privateKey != nullptr);
+
+    AutoSeededRandomPool prng;
+    RSAES<OAEP<SHA256>>::Decryptor decryptor(*this->privateKey);
+
+    assert(0 != decryptor.FixedCiphertextLength());
+    assert(cipherLen <= decryptor.FixedCiphertextLength());
+    assert(plainLen >= decryptor.MaxPlaintextLength(cipherLen));
+
+    DecodingResult result = decryptor.Decrypt(prng, cipher, cipherLen, plain);
+    assert(result.isValidCoding);
+    assert(result.messageLength <= decryptor.MaxPlaintextLength(cipherLen));
+
+    *outputLen = result.messageLength;
+}
+
 void crypto::AsymKey::saveToFile(crypto::KeyType keyType, std::string path, SymKey *symKey)
 {
     using namespace CryptoPP;
@@ -118,6 +158,18 @@ bool crypto::AsymKey::validate(crypto::KeyType keyType)
     if (this->publicKey == nullptr)
         throw CryptoError("Cannot validate public key as it's not loaded or generated yet.");
     return this->publicKey->Validate(prng, 2);
+}
+
+size_t crypto::AsymKey::calculateCipherLen()
+{
+    using namespace CryptoPP;
+    assert(this->publicKey != nullptr);
+    if (this->cipherLen != 0)
+        return this->cipherLen;
+
+    RSAES<OAEP<SHA256>>::Encryptor e(*this->publicKey);
+    this->cipherLen = e.FixedCiphertextLength();
+    return this->cipherLen;
 }
 
 void derivePassword(CryptoPP::byte *derived,
@@ -324,6 +376,17 @@ void crypto::SymKey::decrypt(
         *outputLen = meter.GetTotalBytes();
     }
 };
+
+void crypto::SymKey::getSecret(CryptoPP::byte *secretBuffer, size_t secretBufferLen)
+{
+    assert(secretBufferLen >= this->secretLen);
+    std::copy(this->secret, this->secret + this->secretLen, secretBuffer);
+}
+
+size_t crypto::SymKey::getSecretLen()
+{
+    return this->secretLen;
+}
 
 size_t crypto::SymKey::calculateCipherLen(size_t plainLen)
 {

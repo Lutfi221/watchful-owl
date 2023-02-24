@@ -65,7 +65,8 @@ void to_json(nlohmann::json &j, const Config &c)
         {"enabled", c.encryption.enabled},
         {"rsaPublicKeyPath", c.encryption.rsaPublicKeyPath},
         {"rsaPrivateKeyPath", c.encryption.rsaPrivateKeyPath},
-        {"saltPath", c.encryption.saltPath}};
+        {"saltPath", c.encryption.saltPath},
+        {"keyGenRate", c.encryption.keyGenRate}};
 };
 
 void from_json(const nlohmann::json &j, Config &c)
@@ -77,4 +78,5 @@ void from_json(const nlohmann::json &j, Config &c)
     j.at("encryption").at("rsaPublicKeyPath").get_to(c.encryption.rsaPublicKeyPath);
     j.at("encryption").at("rsaPrivateKeyPath").get_to(c.encryption.rsaPrivateKeyPath);
     j.at("encryption").at("saltPath").get_to(c.encryption.saltPath);
+    j.at("encryption").at("keyGenRate").get_to(c.encryption.keyGenRate);
 };
