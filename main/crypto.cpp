@@ -266,9 +266,10 @@ crypto::SymKeyPasswordBased::~SymKeyPasswordBased()
     delete[] this->salt;
 }
 
-crypto::SymKey::SymKey()
+void crypto::SymKey::generateRandom()
 {
     using namespace CryptoPP;
+    assert(this->secret == nullptr);
     AutoSeededRandomPool prng;
 
     this->secret = new byte[AES_KEY_LEN];

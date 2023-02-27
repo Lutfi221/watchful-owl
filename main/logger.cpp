@@ -188,6 +188,7 @@ void logger::Logger::generateAndAppendSymKey(std::ofstream *fileStream)
 {
     delete this->rotatingSymKey;
     this->rotatingSymKey = new crypto::SymKey();
+    this->rotatingSymKey->generateRandom();
     this->appendSymKey(fileStream);
 }
 void logger::Logger::generateAndAppendSymKey(std::string logPath)

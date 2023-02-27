@@ -12,12 +12,13 @@ namespace crypto
 
     public:
         /// @brief Generate a symmetric key with a random secret.
-        explicit SymKey();
+        void generateRandom();
 
         /// @brief Create a symmetric key.
         /// @param secret Secret key
         /// @param secretLen Length (in bytes) of the secret key
         SymKey(CryptoPP::byte *secret, size_t secretLen);
+        SymKey(){};
         ~SymKey();
 
         size_t getSecretLen();
