@@ -193,7 +193,7 @@ void logger::Logger::generateAndAppendSymKey(std::ofstream *fileStream)
 }
 void logger::Logger::generateAndAppendSymKey(std::string logPath)
 {
-    std::ofstream f(logPath, std::ios::out | std::ios_base::app);
+    std::ofstream f(logPath, std::ios::binary | std::ios::out | std::ios_base::app);
     this->generateAndAppendSymKey(&f);
 }
 
