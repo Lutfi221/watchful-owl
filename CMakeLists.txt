@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.11)
 project(watchful-owl VERSION 1.0.0)
 
 set(UI_SOURCE_FILES
-  main/ui/browser.cpp
+  main/ui/browser.hpp
   main/ui/ui.cpp
   main/ui/pages.cpp
 )

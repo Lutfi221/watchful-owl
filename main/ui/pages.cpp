@@ -206,6 +206,29 @@ NavInstruction EncryptionConfigPage::load()
     return navInstruction;
 };
 
+NavInstruction InfoPage(ftxui::ScreenInteractive *screen, Config *config)
+{
+    INFO("Load `InfoPage`");
+    ftxui::ButtonOption btnOption;
+    auto btn = ftxui::Button("Go Back", screen->ExitLoopClosure(), btnOption.Ascii());
+
+    auto render = [&]()
+    {
+        return basePage(
+            btn->Render(),
+            std::string("Watchful Owl Information"),
+            std::string("Watchful Owl (Opened Windows Logger) is an app that logs "
+                        "your active and opened windows throughout the day."));
+    };
+
+    auto renderer = ftxui::Renderer(btn, render);
+    screen->Loop(renderer);
+
+    NavInstruction n;
+    n.stepsBack = 1;
+    return n;
+}
+
 MainPage::MainPage(ftxui::ScreenInteractive *screen, Config *config)
     : Page(screen, config, u8"Main"){};
 
@@ -225,6 +248,7 @@ NavInstruction MainPage::load()
             : "Activate Watchful Owl",
         "Configure Autorun",
         "Configure Encryption",
+        "About Watchful Owl",
         "Exit"};
 
     int selection = promptSelection(screen, &entries, "Main Menu", desc);
@@ -253,6 +277,9 @@ NavInstruction MainPage::load()
         navInstruction.nextPage = new EncryptionConfigPage(this->screen, this->config);
         break;
     case 3:
+        navInstruction.nextPageFn = &InfoPage;
+        break;
+    case 4:
         navInstruction.flag = NavExit;
         break;
     default:

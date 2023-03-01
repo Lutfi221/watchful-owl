@@ -7,7 +7,7 @@
 #include "spdlog/spdlog.h"
 
 #include "constants.hpp"
-#include "ui/browser.h"
+#include "ui/browser.hpp"
 #include "ui/pages.h"
 #include "ui/ui.h"
 
@@ -43,7 +43,7 @@ int main(int argc, char **argv)
         auto mainPage = MainPage(&screen, &config);
         INFO("Initialized main page");
 
-        Browser browser = Browser(&screen, &mainPage);
+        Browser<Config> browser(&screen, &mainPage, &config);
         INFO("Initialized main browser");
 
         INFO("Start main browser");

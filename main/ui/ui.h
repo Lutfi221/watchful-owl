@@ -18,6 +18,9 @@ enum NavFlag
 
 struct NavInstruction;
 
+/// @brief A page in function form.
+typedef NavInstruction (*PageFn)(ftxui::ScreenInteractive *, Config *);
+
 class Page
 {
 protected:
@@ -36,6 +39,7 @@ struct NavInstruction
     NavFlag flag = NavGeneric;
     int stepsBack = 0;
     Page *nextPage = nullptr;
+    PageFn nextPageFn = nullptr;
 };
 
 /// @brief Standard page layout.
