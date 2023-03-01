@@ -16,15 +16,10 @@ int WinMain(
     killOtherPerpetualInstances();
     auto config = loadConfig();
 
-    auto outDirPath = filesystem::weakly_canonical(
-        getExecutableDirPath() /
-        filesystem::path(config.outDir));
-    if (!filesystem::exists(outDirPath))
-        filesystem::create_directories(outDirPath);
-
+    auto lg = logger::Logger(&config);
     while (true)
     {
-        captureAndAppend(config);
+        lg.captureAndAppend();
         sleepFor(config.loggingInterval);
     }
 }
