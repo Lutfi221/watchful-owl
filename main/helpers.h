@@ -2,6 +2,7 @@
 #define MAIN_HELPERS
 #include <chrono>
 #include <filesystem>
+#include <regex>
 #include <string>
 #include <thread>
 
@@ -55,5 +56,8 @@ inline void sleepFor(unsigned int seconds)
 
 std::string readFile(std::string_view path);
 void startProgram(std::string path);
+
+std::vector<std::filesystem::path> getFileListByRegex(
+    std::filesystem::path dir, std::regex pattern);
 
 #endif /* MAIN_HELPERS */

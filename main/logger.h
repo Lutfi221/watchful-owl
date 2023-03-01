@@ -69,5 +69,31 @@ namespace logger
         /// @param encryptedBinary Should it be encrypted?
         void append(nlohmann::json entry, std::string logPath, bool encryptedBinary = false);
     };
+
+    class LogDecryptor
+    {
+    private:
+        crypto::AsymKey *asymKey = nullptr;
+        /// @brief Create a SymKey from log data.
+        /// @param data Encrypted secret
+        /// @param dataLen Length (in bytes) of encrypted secret
+        /// @return SymKey
+        crypto::SymKey *newSymKeyFromData(CryptoPP::byte *data, size_t dataLen);
+
+    public:
+        LogDecryptor(crypto::AsymKey *asymKey);
+        ~LogDecryptor();
+
+        void decrypt(CryptoPP::byte *cipher,
+                     size_t cipherLen,
+                     CryptoPP::byte *plain,
+                     size_t plainLen,
+                     size_t *outputLen = nullptr);
+    };
+
+    void decryptLogFiles(
+        std::filesystem::path sourceDir,
+        std::filesystem::path destinationDir,
+        crypto::AsymKey *asymKey);
 }
 #endif /* MAIN_LOGGER */

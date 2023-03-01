@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include <filesystem>
 #include <fstream>
+#include <regex>
 #include <string>
 #include <tlhelp32.h>
 #include <vector>
@@ -175,3 +176,25 @@ bool isPerpetualInstanceRunning()
     auto ids = getProcessIds(constants::PERPETUAL_EXE_FILENAME);
     return ids.size() > 0;
 }
+
+std::vector<std::filesystem::path> getFileListByRegex(std::filesystem::path dir, std::regex pattern)
+{
+    using namespace std;
+    if (!filesystem::is_directory(dir))
+        throw runtime_error(dir.string() + "is not a folder.");
+
+    vector<filesystem::path> matchedFiles;
+
+    INFO("Get files in `{}` that match regex pattern", dir.string());
+    for (const auto &entry : filesystem::directory_iterator(dir))
+    {
+        if (entry.is_regular_file())
+        {
+            const auto baseName = entry.path().filename().string();
+            if (regex_match(baseName, pattern))
+                matchedFiles.push_back(entry.path());
+        }
+    }
+
+    return matchedFiles;
+};

@@ -1,5 +1,6 @@
 #include <filesystem>
 #include <fstream>
+#include <map>
 #include <time.h>
 
 #include "capturer.h"
@@ -12,12 +13,18 @@
 #define ENC_LOGFILE_VERSION 'A'
 #define ENC_LOGFILE_SUFFIX ".json.log.enc"
 #define LOGFILE_SUFFIX ".json.log"
+#define ENC_LOGFILE_REGEX_PATTERN "\\d{8}\\.json\\.log\\.enc"
+#define LOGFILE_BASE_NAME_PATTERN "\\d{8}"
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define LITTLE_ENDIAN 1
 #else
 #define LITTLE_ENDIAN 0
 #endif
+
+const std::map<unsigned char, logger::DataType> BYTE_TO_DATA_TYPE{
+    {0, logger::DataTypeJson},
+    {1, logger::DataTypeSymKey}};
 
 /// @brief Capture a snapshot
 /// @param timestamp UNIX timestamp
@@ -215,4 +222,112 @@ logger::Logger::~Logger()
 {
     delete this->asymKey;
     delete this->rotatingSymKey;
+}
+
+logger::LogDecryptor::LogDecryptor(crypto::AsymKey *asymKey) : asymKey(asymKey) {}
+
+void logger::LogDecryptor::decrypt(CryptoPP::byte *cipher,
+                                   size_t cipherLen,
+                                   CryptoPP::byte *plain,
+                                   size_t plainLen,
+                                   size_t *outputLen)
+{
+    assert(plainLen >= cipherLen);
+
+    CryptoPP::byte *pCipher = cipher;
+    CryptoPP::byte *pPlain = plain;
+
+    CryptoPP::byte *pCipherEnd = pCipher + cipherLen - 1;
+    crypto::SymKey *rotatingSymKey = nullptr;
+
+    char versionSpecifier = *pCipher;
+    pCipher++;
+
+    if (versionSpecifier != 'A')
+        throw std::runtime_error("Invalid version specifier in log data.");
+
+    logger::DataType dataType;
+    unsigned long int dataLen = 0;
+
+    while (pCipher < pCipherEnd)
+    {
+        dataType = BYTE_TO_DATA_TYPE.at(*pCipher);
+        pCipher++;
+
+        dataLen = (pCipher[2] << 0) | (pCipher[1] << 8) | (pCipher[0] << 16);
+        pCipher += 3;
+
+        if (dataType == logger::DataTypeSymKey)
+        {
+            delete rotatingSymKey;
+            rotatingSymKey = this->newSymKeyFromData(pCipher, dataLen);
+        }
+        else
+        {
+            *pPlain = '\n';
+            pPlain++;
+
+            size_t outputLen = 0;
+            rotatingSymKey->decrypt(pCipher, dataLen, pPlain, dataLen, &outputLen);
+            pPlain += outputLen;
+        }
+
+        pCipher += dataLen;
+    }
+
+    *outputLen = pPlain - plain;
+    delete rotatingSymKey;
+}
+
+crypto::SymKey *logger::LogDecryptor::newSymKeyFromData(CryptoPP::byte *data, size_t dataLen)
+{
+    CryptoPP::byte outBuffer[dataLen];
+    size_t outputLen = 0;
+
+    this->asymKey->decrypt(data, dataLen, outBuffer, dataLen, &outputLen);
+    return new crypto::SymKey(outBuffer, outputLen);
+}
+
+logger::LogDecryptor::~LogDecryptor()
+{
+}
+
+void logger::decryptLogFiles(
+    std::filesystem::path sourceDir,
+    std::filesystem::path destinationDir,
+    crypto::AsymKey *asymKey)
+{
+    using namespace std;
+    LogDecryptor logDecryptor(asymKey);
+    regex baseNamePattern(LOGFILE_BASE_NAME_PATTERN);
+
+    vector<filesystem::path> files = getFileListByRegex(
+        sourceDir,
+        regex(ENC_LOGFILE_REGEX_PATTERN,
+              regex_constants::icase));
+    INFO("Found {} log files to decrypt", files.size());
+
+    for (auto &file : files)
+    {
+        auto size = filesystem::file_size(file);
+        INFO("Process log file `{}` with size of {} bytes", file.string(), size);
+        unsigned char inBuffer[size];
+        unsigned char outBuffer[size];
+        size_t outputLen = 0;
+
+        DEBUG("Read log file to buffer");
+        ifstream f(file, ios::binary);
+        f.read((char *)&inBuffer[0], size);
+
+        DEBUG("Decrypt log file in buffer");
+        logDecryptor.decrypt(&inBuffer[0], size, &outBuffer[0], size, &outputLen);
+
+        auto fileName = file.filename().u8string();
+        smatch baseNameMatch;
+        regex_search(fileName, baseNameMatch, baseNamePattern);
+        string outputFileName = string(baseNameMatch[0]) + string(LOGFILE_SUFFIX);
+
+        ofstream of(destinationDir / filesystem::path(outputFileName), ios::binary | ios::app);
+        of.write((char *)&outBuffer[0], outputLen);
+    }
 }

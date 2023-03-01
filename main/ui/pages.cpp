@@ -7,6 +7,7 @@
 #include "crypto.h"
 #include "dev-logger.h"
 #include "helpers.h"
+#include "logger.h"
 #include "pages.h"
 #include "ui.h"
 
@@ -128,6 +129,44 @@ NavInstruction EncryptionSetUpPage::load()
     return navInstruction;
 };
 
+NavInstruction LogDecryptionPage(ftxui::ScreenInteractive *screen, Config *config)
+{
+    std::string saltPath =
+        prepareAndProcessPath(config->encryption.saltPath)
+            .u8string();
+    std::string privateKeyPath =
+        prepareAndProcessPath(config->encryption.rsaPrivateKeyPath)
+            .u8string();
+    std::string password = promptPassword(
+        screen, false,
+        "Private Key Password",
+        "Enter your secret private key password.");
+
+    INFO("Generate symmetric key from user's password");
+    crypto::SymKeyPasswordBased symKey(password, saltPath);
+    crypto::AsymKey asymKey;
+
+    INFO("Load RSA private key from {}", saltPath);
+    asymKey.loadFromFile(
+        crypto::KeyTypePrivate,
+        privateKeyPath,
+        &symKey);
+
+    DEBUG("Validate RSA private key");
+    if (asymKey.validate(crypto::KeyTypePrivate))
+        INFO("RSA private key is valid");
+    else
+        INFO("RSA private key is invalid");
+
+    auto logsDir = prepareAndProcessPath(config->outDir, true, true);
+
+    logger::decryptLogFiles(logsDir, logsDir, &asymKey);
+
+    NavInstruction navInstruction;
+    navInstruction.stepsBack = 1;
+    return navInstruction;
+}
+
 class EncryptionConfigPage : public Page
 {
 public:
@@ -149,7 +188,7 @@ NavInstruction EncryptionConfigPage::load()
     std::string desc;
     EncryptionStatus encryptionStatus;
 
-    std::vector<std::string> entries = {"", "Back"};
+    std::vector<std::string> entries = {"", "Decrypt Logs", "Back"};
 
     auto publicKeyPath = config->encryption.rsaPublicKeyPath;
     bool keyFileExists = fileExists(publicKeyPath);
@@ -196,6 +235,10 @@ NavInstruction EncryptionConfigPage::load()
         }
 
         navInstruction.nextPage = new EncryptionSetUpPage(this->screen, config);
+        break;
+
+    case 1:
+        navInstruction.nextPageFn = &LogDecryptionPage;
         break;
 
     default:
