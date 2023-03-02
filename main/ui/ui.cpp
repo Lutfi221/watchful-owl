@@ -6,6 +6,7 @@
 #include "ftxui/component/screen_interactive.hpp"
 
 #include "dev-logger.h"
+#include "helpers.h"
 #include "ui.h"
 
 ftxui::Element basePage(
@@ -27,7 +28,11 @@ ftxui::Element basePage(
     if (title != "")
         components.push_back(color(Color::Cyan, text(title) | bold));
     if (description != "")
-        components.push_back(paragraph(description));
+    {
+        auto texts = split(description, "\n");
+        for (auto &line : texts)
+            components.push_back(paragraph(line));
+    }
     if (components.size() != 0)
         components.push_back(separatorEmpty());
 

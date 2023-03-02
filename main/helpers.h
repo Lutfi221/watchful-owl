@@ -60,4 +60,6 @@ void startProgram(std::string path);
 std::vector<std::filesystem::path> getFileListByRegex(
     std::filesystem::path dir, std::regex pattern);
 
+std::vector<std::string> split(std::string s, std::string delimiter = "\n");
+
 #endif /* MAIN_HELPERS */
