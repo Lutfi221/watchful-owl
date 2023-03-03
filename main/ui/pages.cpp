@@ -11,6 +11,8 @@
 #include "pages.h"
 #include "ui.h"
 
+#define DEFAULT_DECRYPTED_DEST_DIR "./decrypted-logs"
+
 class AutorunConfigPage : public Page
 {
 public:
@@ -131,6 +133,9 @@ NavInstruction EncryptionSetUpPage::load()
 
 NavInstruction LogDecryptionPage(ftxui::ScreenInteractive *screen, Config *config)
 {
+    NavInstruction navInstruction;
+    navInstruction.stepsBack = 1;
+
     std::string saltPath =
         prepareAndProcessPath(config->encryption.saltPath)
             .u8string();
@@ -158,12 +163,33 @@ NavInstruction LogDecryptionPage(ftxui::ScreenInteractive *screen, Config *confi
     else
         INFO("RSA private key is invalid");
 
-    auto logsDir = prepareAndProcessPath(config->outDir, true, true);
+    std::string sourceDir = config->outDir;
+    std::string destDir = DEFAULT_DECRYPTED_DEST_DIR;
+    bool cancelled = false;
 
-    logger::decryptLogFiles(logsDir, logsDir, &asymKey);
+    // Prompt for source directory
+    PromptOption promptOption;
+    promptOption.inputLabel = "Source Directory";
+    promptOption.title = "Source Directory Path";
+    promptOption.description = "Input the directory path containing "
+                               "the encrypted log files.";
 
-    NavInstruction navInstruction;
-    navInstruction.stepsBack = 1;
+    if (!promptTextInput(screen, &sourceDir, &promptOption))
+        return navInstruction;
+    sourceDir = prepareAndProcessPath(sourceDir, true, true).u8string();
+
+    // Prompt for destination directory
+    promptOption.inputLabel = "Destination Directory";
+    promptOption.title = "Destination Directory Path";
+    promptOption.description = "Input the destination directory path to put "
+                               "the decrypted log files.";
+
+    if (!promptTextInput(screen, &destDir, &promptOption))
+        return navInstruction;
+    destDir = prepareAndProcessPath(destDir, true, true).u8string();
+
+    INFO("Decrypt log files from `{}` to `{}`", sourceDir, destDir);
+    logger::decryptLogFiles(sourceDir, destDir, &asymKey);
     return navInstruction;
 }
 
