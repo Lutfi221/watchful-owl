@@ -1,5 +1,6 @@
 #ifndef MAIN_UI_UI
 #define MAIN_UI_UI
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -78,5 +79,25 @@ std::string promptPassword(
     bool withConfirmation = false,
     std::string title = "",
     std::string description = "");
+
+struct PromptOption
+{
+    std::string title = "";
+    std::string description = "";
+    std::string inputLabel = "";
+    std::function<bool(std::string *, std::string *)> validate = nullptr;
+    bool cancellable = true;
+    bool validateOnChange = false;
+};
+
+/// @brief Prompt user for a text input.
+/// @param screen
+/// @param output User input string
+/// @param option Prompt option
+/// @return false if the user cancelled, true otherwise.
+bool promptTextInput(
+    ftxui::ScreenInteractive *screen,
+    std::string *output,
+    PromptOption *promptOption);
 
 #endif /* MAIN_UI_UI */

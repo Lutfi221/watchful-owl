@@ -136,5 +136,85 @@ std::string promptPassword(
     return password;
 }
 
+bool promptTextInput(
+    ftxui::ScreenInteractive *screen,
+    std::string *output,
+    PromptOption *option)
+{
+    using namespace ftxui;
+    std::vector<Component> components;
+    std::string validatorMsg;
+    bool validatorMsgVisible = option->validateOnChange;
+    bool inputValid = false;
+    bool cancelled = false;
+
+    auto handleSubmit = [&]()
+    {
+        validatorMsgVisible = true;
+
+        if (option->validate == nullptr)
+            inputValid = true;
+        else
+            inputValid = option->validate(output, &validatorMsg);
+
+        if (!inputValid)
+            return;
+
+        screen->ExitLoopClosure()();
+    };
+    auto handleCancel = [&]
+    {
+        cancelled = true;
+        screen->ExitLoopClosure()();
+        return;
+    };
+
+    InputOption inputOption;
+    inputOption.on_enter = handleSubmit;
+    if (option->validateOnChange && option->validate != nullptr)
+        inputOption.on_change = [&]
+        {
+            inputValid = option->validate(output, &validatorMsg);
+        };
+
+    // Main Input
+    Component input = Input(output, option->inputLabel, inputOption);
+    components.push_back(input);
+
+    // Submit Button
+    Component submitBtn = Button("Submit", handleSubmit);
+    components.push_back(submitBtn);
+
+    // Cancel Button
+    Component cancelBtn = Button("Cancel", handleCancel);
+    if (option->cancellable)
+        components.push_back(cancelBtn);
+
+    auto root = Container::Vertical(components);
+
+    auto renderFn = [&]
+    {
+        std::vector v =
+            {
+                hbox(
+                    text(option->inputLabel + " : "),
+                    input->Render()),
+                flex_shrink(submitBtn->Render())};
+
+        if (option->cancellable)
+            v.push_back(flex_shrink(cancelBtn->Render()));
+
+        if (validatorMsgVisible)
+            v.push_back(text(validatorMsg) | color(inputValid ? Color::Green : Color::Red));
+
+        return basePage(v, option->title, option->description);
+    };
+    auto renderer = Renderer(
+        root, renderFn);
+
+    screen->Loop(renderer);
+    return !cancelled;
+}
+
 Page::Page(ftxui::ScreenInteractive *screen, Config *config, std::string name)
     : screen(screen), config(config), name(name){};
