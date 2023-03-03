@@ -100,4 +100,12 @@ bool promptTextInput(
     std::string *output,
     PromptOption *promptOption);
 
+/// @brief Display a static page with an OK button.
+/// @param screen
+/// @param title
+/// @param description
+void showInfo(ftxui::ScreenInteractive *screen,
+              std::string title,
+              std::string description);
+
 #endif /* MAIN_UI_UI */

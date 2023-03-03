@@ -40,6 +40,14 @@ ftxui::Element basePage(
     return vbox(components);
 };
 
+void showInfo(ftxui::ScreenInteractive *screen,
+              std::string title,
+              std::string description)
+{
+    std::vector e({std::string("Ok")});
+    promptSelection(screen, &e, title, description);
+};
+
 int promptSelection(
     ftxui::ScreenInteractive *screen,
     std::vector<std::string> *entries,
