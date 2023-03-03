@@ -205,11 +205,11 @@ NavInstruction LogDecryptionPage(ftxui::ScreenInteractive *screen, Config *confi
     return navInstruction;
 }
 
-class EncryptionConfigPage : public Page
+class EncryptionPage : public Page
 {
 public:
     const std::string name;
-    EncryptionConfigPage(ftxui::ScreenInteractive *screen, Config *config)
+    EncryptionPage(ftxui::ScreenInteractive *screen, Config *config)
         : Page(screen, config, u8"EncryptionConfig"){};
     NavInstruction load();
 };
@@ -219,7 +219,7 @@ enum EncryptionStatus
     EncryptionIncomplete,
     EncryptionDisabled
 };
-NavInstruction EncryptionConfigPage::load()
+NavInstruction EncryptionPage::load()
 {
     Config *config = this->config;
     NavInstruction navInstruction;
@@ -331,7 +331,7 @@ NavInstruction MainPage::load()
             ? "Deactivate Watchful Owl"
             : "Activate Watchful Owl",
         "Configure Autorun",
-        "Configure Encryption",
+        "Encryption",
         "About Watchful Owl",
         "Exit"};
 
@@ -358,7 +358,7 @@ NavInstruction MainPage::load()
         navInstruction.nextPage = new AutorunConfigPage(this->screen, this->config);
         break;
     case 2:
-        navInstruction.nextPage = new EncryptionConfigPage(this->screen, this->config);
+        navInstruction.nextPage = new EncryptionPage(this->screen, this->config);
         break;
     case 3:
         navInstruction.nextPageFn = &InfoPage;
