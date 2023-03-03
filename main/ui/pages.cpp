@@ -188,8 +188,20 @@ NavInstruction LogDecryptionPage(ftxui::ScreenInteractive *screen, Config *confi
         return navInstruction;
     destDir = prepareAndProcessPath(destDir, true, true).u8string();
 
+    ftxui::Render(
+        *screen,
+        basePage(ftxui::emptyElement(), "Processing...", "Decrypting Log Files..."));
+    screen->Print();
+
     INFO("Decrypt log files from `{}` to `{}`", sourceDir, destDir);
     logger::decryptLogFiles(sourceDir, destDir, &asymKey);
+    screen->Clear();
+
+    showInfo(screen,
+             "Decryption Complete",
+             "Log files from `" + sourceDir +
+                 "` has been decrypted to `" + destDir + "`.");
+
     return navInstruction;
 }
 
