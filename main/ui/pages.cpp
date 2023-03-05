@@ -44,7 +44,7 @@ NavInstruction AutorunConfigPage::load()
         entries[0] = "Fix Invalid Autorun and Enable It";
         description = "Autorun is NOT VALID.\n"
                       "This might be caused by the following reasons:\n"
-                      " - The Watchful Owl program was moved to a different"
+                      " - The Watchful Owl program was moved to a different "
                       "location since it was opened.\n"
                       " - There are two Watchful Owl program in this PC.\n\n"
                       "Would you like to fix the issue?";
