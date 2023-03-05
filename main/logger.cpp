@@ -250,6 +250,8 @@ void logger::LogDecryptor::decrypt(CryptoPP::byte *cipher,
     logger::DataType dataType;
     unsigned long int dataLen = 0;
 
+    DEBUG("Begin decryption loop");
+
     while (pCipher < pCipherEnd)
     {
         dataType = BYTE_TO_DATA_TYPE.at(*pCipher);
@@ -258,9 +260,12 @@ void logger::LogDecryptor::decrypt(CryptoPP::byte *cipher,
         dataLen = (pCipher[2] << 0) | (pCipher[1] << 8) | (pCipher[0] << 16);
         pCipher += 3;
 
+        DEBUG("Byte position: {}; data length: {};", pCipher - cipher, dataLen);
+
         if (dataType == logger::DataTypeSymKey)
         {
             delete rotatingSymKey;
+            DEBUG("Load sym key");
             rotatingSymKey = this->newSymKeyFromData(pCipher, dataLen);
         }
         else
@@ -268,6 +273,7 @@ void logger::LogDecryptor::decrypt(CryptoPP::byte *cipher,
             *pPlain = '\n';
             pPlain++;
 
+            DEBUG("Decrypt data");
             size_t outputLen = 0;
             rotatingSymKey->decrypt(pCipher, dataLen, pPlain, dataLen, &outputLen);
             pPlain += outputLen;
