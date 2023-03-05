@@ -54,6 +54,12 @@ inline void sleepFor(unsigned int seconds)
     std::this_thread::sleep_for(std::chrono::seconds(seconds));
 }
 
+inline void sleepFor(float seconds)
+{
+    unsigned int ms = seconds * 1000;
+    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+}
+
 std::string readFile(std::string_view path);
 void startProgram(std::string path);
 

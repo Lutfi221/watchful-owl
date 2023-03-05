@@ -12,6 +12,7 @@
 #include "ui.h"
 
 #define DEFAULT_DECRYPTED_DEST_DIR "./decrypted-logs"
+#define SLEEP_LEN_AFTER_INSTANCE_KILL 0.3f
 
 class AutorunConfigPage : public Page
 {
@@ -351,7 +352,11 @@ NavInstruction MainPage::load()
     case 0:
         /* activate or deactivate perpetual owl */
         if (isInstanceRunning)
+        {
             killAllPerpetualInstances();
+            // To give some time for Windows to kill the perpetual instance.
+            sleepFor(SLEEP_LEN_AFTER_INSTANCE_KILL);
+        }
         else
         {
             perpetualExePath = (getExecutableDirPath() /
