@@ -68,13 +68,18 @@ int promptSelection(
     std::string title,
     std::string description);
 
-struct PromptOption
+struct BaseInputOption
 {
+
     std::string title = "";
     std::string description = "";
+    bool cancellable = true;
+};
+
+struct PromptOption : BaseInputOption
+{
     std::string inputLabel = "";
     std::function<bool(std::string *, std::string *)> validate = nullptr;
-    bool cancellable = true;
     bool validateOnChange = false;
 };
 
@@ -88,7 +93,7 @@ bool promptTextInput(
     std::string *output,
     PromptOption *promptOption);
 
-struct PasswordPromptOption : PromptOption
+struct PasswordPromptOption : BaseInputOption
 {
     bool withConfirmation = false;
 };
