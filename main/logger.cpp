@@ -113,6 +113,7 @@ void logger::Logger::append(nlohmann::json entry, std::string logPath, bool encr
         std::ofstream logFile(logPath, std::ios::out | std::ios_base::app);
         logFile << "\n"
                 << entry.dump();
+        return;
     }
 
     std::ofstream logFile(logPath, std::ios::binary | std::ios::out | std::ios_base::app);
