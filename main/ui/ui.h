@@ -68,18 +68,6 @@ int promptSelection(
     std::string title,
     std::string description);
 
-/// @brief Prompt user for a password
-/// @param screen FTXUI screen
-/// @param withConfirmation Display an extra password input as confirmation
-/// @param title Title
-/// @param description Description
-/// @return The inputted password
-std::string promptPassword(
-    ftxui::ScreenInteractive *screen,
-    bool withConfirmation = false,
-    std::string title = "",
-    std::string description = "");
-
 struct PromptOption
 {
     std::string title = "";
@@ -99,6 +87,16 @@ bool promptTextInput(
     ftxui::ScreenInteractive *screen,
     std::string *output,
     PromptOption *promptOption);
+
+struct PasswordPromptOption : PromptOption
+{
+    bool withConfirmation = false;
+};
+
+bool promptPassword(
+    ftxui::ScreenInteractive *screen,
+    std::string *output,
+    PasswordPromptOption *option);
 
 /// @brief Display a static page with an OK button.
 /// @param screen

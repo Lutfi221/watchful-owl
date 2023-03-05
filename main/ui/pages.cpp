@@ -84,8 +84,9 @@ public:
 
 NavInstruction EncryptionSetUpPage::load()
 {
-    Config *config = this->config;
     NavInstruction navInstruction;
+    navInstruction.stepsBack = 1;
+
     unsigned int sizes[4] = {4096, 2048, 1024, 512};
     std::vector<std::string> entries = {"4096 (best)",
                                         "2048 (recommended by NIST of USA)",
@@ -100,16 +101,19 @@ NavInstruction EncryptionSetUpPage::load()
                             "but will be (slightly) slower.");
 
     if (s == 4)
-    {
-        navInstruction.stepsBack = 1;
         return navInstruction;
-    }
 
-    std::string password = promptPassword(
-        this->screen, true,
-        "Encryption Password",
-        "Make a strong password to secure your activity log. "
-        "If you forget the password, your activities will be lost forever!");
+    std::string password;
+    PasswordPromptOption promptOption;
+    promptOption.withConfirmation = true;
+    promptOption.cancellable = true;
+    promptOption.title = "Encryption Password Set Up";
+    promptOption.description =
+        "Make a strong password to secure your activity log. \n"
+        "If you forget the password, your activities will be lost forever!";
+
+    if (!promptPassword(this->screen, &password, &promptOption))
+        return navInstruction;
 
     unsigned int size = sizes[s];
     auto publicKeyPath = prepareAndProcessPath(config->encryption.rsaPublicKeyPath).u8string();
@@ -127,7 +131,6 @@ NavInstruction EncryptionSetUpPage::load()
     this->config->encryption.enabled = true;
     saveConfig(config);
 
-    navInstruction.stepsBack = 1;
     return navInstruction;
 };
 
@@ -142,10 +145,15 @@ NavInstruction LogDecryptionPage(ftxui::ScreenInteractive *screen, Config *confi
     std::string privateKeyPath =
         prepareAndProcessPath(config->encryption.rsaPrivateKeyPath)
             .u8string();
-    std::string password = promptPassword(
-        screen, false,
-        "Private Key Password",
-        "Enter your secret private key password.");
+
+    std::string password;
+    PasswordPromptOption passPromptOption;
+    passPromptOption.cancellable = true;
+    passPromptOption.title = "Private Key Password";
+    passPromptOption.description = "Enter your secret private key password.";
+
+    if (!promptPassword(screen, &password, &passPromptOption))
+        return navInstruction;
 
     INFO("Generate symmetric key from user's password");
     crypto::SymKeyPasswordBased symKey(password, saltPath);

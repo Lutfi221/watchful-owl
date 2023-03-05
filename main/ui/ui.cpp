@@ -74,46 +74,61 @@ int promptSelection(
     return selected;
 }
 
-std::string promptPassword(
+bool promptPassword(
     ftxui::ScreenInteractive *screen,
-    bool withConfirmation,
-    std::string title,
-    std::string description)
+    std::string *output,
+    PasswordPromptOption *option)
 {
     using namespace ftxui;
     std::string password;
     std::string passwordC;
     bool isFirstAttempt = true;
+    bool cancelled = false;
 
     InputOption passwordOption;
     InputOption passwordCOption;
     passwordOption.password = true;
     passwordCOption.password = true;
 
+    // Password Inputs
     Component passwordInput = Input(&password, "Password", &passwordOption);
     Component passwordCInput = Input(&passwordC, "Confirm Password", &passwordCOption);
 
-    Component component;
-    std::vector<Element> content;
+    // Submit Button
+    Component submitBtn = Button("Submit", screen->ExitLoopClosure());
 
-    if (withConfirmation)
+    // Cancel Button
+    auto handleCancel = [&]
     {
-        component = Container::Vertical({passwordInput, passwordCInput});
+        cancelled = true;
+        screen->ExitLoopClosure()();
+    };
+    Component cancelBtn = Button("Cancel", handleCancel);
+
+    Component root = Container::Vertical({passwordInput});
+
+    // Add password confirmation field if needed.
+    if (option->withConfirmation)
+    {
+        root->Add(passwordCInput);
         passwordOption.on_enter = [&]
-        { component->SetActiveChild(passwordCInput); };
+        { root->SetActiveChild(passwordCInput); };
         passwordCOption.on_enter = screen->ExitLoopClosure();
     }
     else
-    {
-        component = Container::Vertical({passwordInput});
         passwordOption.on_enter = screen->ExitLoopClosure();
-    }
+
+    root->Add(submitBtn);
+
+    if (option->cancellable)
+        root->Add(cancelBtn);
 
     auto render = [&]
     {
         std::vector<Element> content;
 
-        if (withConfirmation)
+        // Input fields
+        if (option->withConfirmation)
             content = {hbox(text(" Password : "),
                             passwordInput->Render()),
                        hbox(text(" Confirm  : "),
@@ -122,6 +137,12 @@ std::string promptPassword(
             content = {hbox(text(" Password : "),
                             passwordInput->Render())};
 
+        // Buttons
+        content.push_back(submitBtn->Render());
+        if (option->cancellable)
+            content.push_back(cancelBtn->Render());
+
+        // Extra infos
         if (!isFirstAttempt && password != passwordC)
         {
             content.push_back(separatorEmpty());
@@ -130,18 +151,18 @@ std::string promptPassword(
                 paragraph("Passwords do not match, try again."))));
         }
 
-        return basePage(content, title, description);
+        return basePage(content, option->title, option->description);
     };
 
-    auto renderer = Renderer(component, render);
+    auto renderer = Renderer(root, render);
     do
     {
         screen->Loop(renderer);
         isFirstAttempt = false;
-        if (!withConfirmation)
-            break;
-    } while (password != passwordC);
-    return password;
+    } while (option->withConfirmation && password != passwordC && !cancelled);
+
+    *output = password;
+    return !cancelled;
 }
 
 bool promptTextInput(
