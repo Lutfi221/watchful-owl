@@ -79,7 +79,9 @@ void crypto::AsymKey::decrypt(CryptoPP::byte *cipher, size_t cipherLen,
     assert(plainLen >= decryptor.MaxPlaintextLength(cipherLen));
 
     DecodingResult result = decryptor.Decrypt(prng, cipher, cipherLen, plain);
-    assert(result.isValidCoding);
+    if (!result.isValidCoding)
+        throw DecryptionError("AsymKey::decrypt: Decryption result is not a valid coding.");
+
     assert(result.messageLength <= decryptor.MaxPlaintextLength(cipherLen));
 
     *outputLen = result.messageLength;
@@ -365,12 +367,19 @@ void crypto::SymKey::decrypt(
 
     MeterFilter meter(new ArraySink(plainBuffer, plainBufferLen));
 
-    ArraySource ar(cipher + AES_BLOCKSIZE,
-                   cipherLen - AES_BLOCKSIZE,
-                   true,
-                   new StreamTransformationFilter(
-                       d,
-                       new Redirector(meter)));
+    try
+    {
+        ArraySource ar(cipher + AES_BLOCKSIZE,
+                       cipherLen - AES_BLOCKSIZE,
+                       true,
+                       new StreamTransformationFilter(
+                           d,
+                           new Redirector(meter)));
+    }
+    catch (const CryptoPP::InvalidCiphertext &ex)
+    {
+        throw DecryptionError(ex.what());
+    }
 
     if (outputLen != nullptr)
     {
@@ -397,4 +406,34 @@ size_t crypto::SymKey::calculateCipherLen(size_t plainLen)
 crypto::SymKey::~SymKey()
 {
     delete[] this->secret;
+}
+
+crypto::CryptoError::CryptoError(const std::string &message) : message(message)
+{
+}
+
+const char *crypto::CryptoError::what() const noexcept
+{
+    return this->message.c_str();
+}
+
+crypto::DecryptionError::DecryptionError(
+    const std::string &message, bool prependCommonMessage)
+{
+    if (!prependCommonMessage)
+    {
+        this->message = message;
+        return;
+    }
+
+    this->message = "Decryption error.\n"
+                    "The most likely causes are \n"
+                    " 1. an invalid password/key,\n"
+                    " 2. corrupted encrypted data,\n"
+                    " 3. or incorrect decryption parameters.";
+
+    if (!message.empty())
+        this->message += "\n\n"
+                         "Extra context: " +
+                         message;
 }

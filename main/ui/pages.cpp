@@ -1,3 +1,4 @@
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -147,30 +148,65 @@ NavInstruction LogDecryptionPage(ftxui::ScreenInteractive *screen, Config *confi
         prepareAndProcessPath(config->encryption.rsaPrivateKeyPath)
             .u8string();
 
+    std::unique_ptr<crypto::SymKeyPasswordBased> symKey(nullptr);
+    std::unique_ptr<crypto::AsymKey> asymKey(nullptr);
     std::string password;
+    bool asymKeyLoaded = false;
+
     PasswordPromptOption passPromptOption;
     passPromptOption.cancellable = true;
     passPromptOption.title = "Private Key Password";
     passPromptOption.description = "Enter your secret private key password.";
 
-    if (!promptPassword(screen, &password, &passPromptOption))
-        return navInstruction;
+    while (!asymKeyLoaded)
+    {
+        password = "";
+        asymKey.reset(new crypto::AsymKey);
+        if (!promptPassword(screen, &password, &passPromptOption))
+            return navInstruction;
 
-    INFO("Generate symmetric key from user's password");
-    crypto::SymKeyPasswordBased symKey(password, saltPath);
-    crypto::AsymKey asymKey;
+        INFO("Generate symmetric key from user's password");
+        symKey.reset(new crypto::SymKeyPasswordBased(password, saltPath));
 
-    INFO("Load RSA private key from {}", saltPath);
-    asymKey.loadFromFile(
-        crypto::KeyTypePrivate,
-        privateKeyPath,
-        &symKey);
+        try
+        {
+            INFO("Load RSA private key from {}", saltPath);
+            asymKey->loadFromFile(
+                crypto::KeyTypePrivate,
+                privateKeyPath,
+                symKey.get());
+            asymKeyLoaded = true;
+        }
+        catch (const crypto::DecryptionError &ex)
+        {
+            SPDERROR(ex.what());
+
+            std::vector<std::string> e({"Try again", "Cancel"});
+            int i = promptSelection(screen,
+                                    &e,
+                                    "Decryption Error",
+                                    "Cannot decrypt RSA private key.\n"
+                                    "You might have entered an incorrect password, "
+                                    "or the encrypted private key data is corrupted.");
+            if (i == 1)
+                return navInstruction;
+        }
+    }
 
     DEBUG("Validate RSA private key");
-    if (asymKey.validate(crypto::KeyTypePrivate))
-        INFO("RSA private key is valid");
-    else
+    if (!asymKey->validate(crypto::KeyTypePrivate))
+    {
         INFO("RSA private key is invalid");
+        showInfo(
+            screen,
+            "Invalid Private Key",
+            "Loaded RSA private key is invalid.\n"
+            "Path: `" +
+                privateKeyPath + "`");
+        return navInstruction;
+    }
+
+    INFO("RSA private key is valid");
 
     std::string sourceDir = config->outDir;
     std::string destDir = DEFAULT_DECRYPTED_DEST_DIR;
@@ -203,7 +239,7 @@ NavInstruction LogDecryptionPage(ftxui::ScreenInteractive *screen, Config *confi
     screen->Print();
 
     INFO("Decrypt log files from `{}` to `{}`", sourceDir, destDir);
-    logger::decryptLogFiles(sourceDir, destDir, &asymKey);
+    logger::decryptLogFiles(sourceDir, destDir, asymKey.get());
     screen->Clear();
 
     showInfo(screen,

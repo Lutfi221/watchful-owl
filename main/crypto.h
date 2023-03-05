@@ -101,9 +101,21 @@ namespace crypto
                      size_t *outputLen = nullptr);
     };
 
-    class CryptoError : public std::runtime_error
+    class CryptoError : public std::exception
     {
-        using CryptoError::runtime_error::runtime_error;
+    protected:
+        std::string message;
+
+    public:
+        CryptoError(const std::string &message = "A cryptographic error has occured.");
+
+        const char *what() const noexcept override;
+    };
+
+    class DecryptionError : public CryptoError
+    {
+    public:
+        DecryptionError(const std::string &message, bool prependCommonMessage = true);
     };
 }
 
