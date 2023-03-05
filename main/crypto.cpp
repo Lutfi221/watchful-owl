@@ -20,7 +20,7 @@
 #define AES_BLOCKSIZE CryptoPP::AES::BLOCKSIZE
 /// Salt length in bytes
 #define SALT_LEN 32
-#define PBKDF2_ITERATIONS 1024
+#define PBKDF2_ITERATIONS 600000
 
 crypto::AsymKey::~AsymKey()
 {
