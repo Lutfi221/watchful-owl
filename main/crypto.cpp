@@ -400,7 +400,9 @@ size_t crypto::SymKey::getSecretLen()
 
 size_t crypto::SymKey::calculateCipherLen(size_t plainLen)
 {
-    return CryptoPP::RoundUpToMultipleOf(plainLen + AES_BLOCKSIZE, AES_BLOCKSIZE);
+    return plainLen + (AES_BLOCKSIZE - (plainLen % AES_BLOCKSIZE)) +
+           // And to account for the prependded IV
+           AES_BLOCKSIZE;
 }
 
 crypto::SymKey::~SymKey()
