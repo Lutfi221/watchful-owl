@@ -166,6 +166,14 @@ NavInstruction LogDecryptionPage(ftxui::ScreenInteractive *screen, Config *confi
             return navInstruction;
 
         INFO("Generate symmetric key from user's password");
+        ftxui::Render(
+            *screen,
+            basePage(
+                ftxui::emptyElement(),
+                "Processing...",
+                "Processing the user's password, please wait."));
+        screen->Print();
+
         symKey.reset(new crypto::SymKeyPasswordBased(password, saltPath));
 
         try
