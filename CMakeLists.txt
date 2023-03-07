@@ -38,6 +38,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 endif()
 
 add_compile_definitions(
+  "PROJECT_VERSION=\"${CMAKE_PROJECT_VERSION}\""
   "DEBUG_BUILD=$<CONFIG:Debug>"
   "PERPETUAL_TARGET_NAME=\"${PERPETUAL_TARGET_NAME}\""
 )

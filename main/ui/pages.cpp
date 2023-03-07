@@ -354,6 +354,7 @@ NavInstruction InfoPage(ftxui::ScreenInteractive *screen, Config *config)
             std::string("Watchful Owl (Opened Windows Logger) is an app that logs "
                         "your active and opened windows throughout the day.\n"
                         " \n"
+                        "Version: " PROJECT_VERSION "\n"
                         "Homepage at https://github.com/Lutfi221/watchful-owl\n"
                         "Created by Lutfi Azis"));
     };
