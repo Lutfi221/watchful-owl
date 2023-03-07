@@ -31,6 +31,9 @@ CPMAddPackage(
 CPMAddPackage(
   "gh:abdes/cryptopp-cmake#CRYPTOPP_8_7_0_1"
 )
+CPMAddPackage(
+  "gh:andrew-hardin/cmake-git-version-tracking#7d9442bfade5a47b77291e4117f81cc65887c7b9"
+)
 # ---------------------
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
@@ -59,6 +62,7 @@ target_link_libraries(watchful-owl
   PRIVATE ftxui::component
   PRIVATE spdlog
   PRIVATE cryptopp
+  PRIVATE cmake_git_version_tracking
 )
 
 target_include_directories(watchful-owl PRIVATE main)

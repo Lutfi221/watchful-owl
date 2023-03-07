@@ -12,6 +12,8 @@
 #include "pages.h"
 #include "ui.h"
 
+#include "git.h"
+
 #define DEFAULT_DECRYPTED_DEST_DIR "./decrypted-logs"
 #define SLEEP_LEN_AFTER_INSTANCE_KILL 0.3f
 
@@ -343,20 +345,24 @@ NavInstruction EncryptionPage::load()
 NavInstruction InfoPage(ftxui::ScreenInteractive *screen, Config *config)
 {
     INFO("Load `InfoPage`");
+    std::string hash(git_CommitSHA1());
+    std::string title = "Watchful Owl Information";
+    std::string desc = "Watchful Owl (Opened Windows Logger) is an app that logs "
+                       "your active and opened windows throughout the day.\n"
+                       " \n"
+                       "Version: " PROJECT_VERSION "\n"
+                       "Commit : " +
+                       hash + "\n" +
+                       " \n"
+                       "Homepage at https://github.com/Lutfi221/watchful-owl\n"
+                       "Created by Lutfi Azis";
+
     ftxui::ButtonOption btnOption;
     auto btn = ftxui::Button("Go Back", screen->ExitLoopClosure(), btnOption.Ascii());
 
     auto render = [&]()
     {
-        return basePage(
-            btn->Render(),
-            std::string("Watchful Owl Information"),
-            std::string("Watchful Owl (Opened Windows Logger) is an app that logs "
-                        "your active and opened windows throughout the day.\n"
-                        " \n"
-                        "Version: " PROJECT_VERSION "\n"
-                        "Homepage at https://github.com/Lutfi221/watchful-owl\n"
-                        "Created by Lutfi Azis"));
+        return basePage(btn->Render(), title, desc);
     };
 
     auto renderer = ftxui::Renderer(btn, render);
