@@ -16,12 +16,6 @@
 #define ENC_LOGFILE_REGEX_PATTERN "\\d{8}\\.json\\.log\\.enc"
 #define LOGFILE_BASE_NAME_PATTERN "\\d{8}"
 
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#define LITTLE_ENDIAN 1
-#else
-#define LITTLE_ENDIAN 0
-#endif
-
 const std::map<unsigned char, logger::DataType> BYTE_TO_DATA_TYPE{
     {0, logger::DataTypeJson},
     {1, logger::DataTypeSymKey}};
@@ -140,24 +134,10 @@ void logger::Logger::appendBinary(logger::DataType type, unsigned char *data,
     if (dataLen > 16777215)
         throw std::runtime_error("Data exceeds supported length of 16 megabytes");
 
-    unsigned char entryLen[3];
-
-#if LITTLE_ENDIAN == 1
-
-    unsigned char *src = (unsigned char *)&dataLen;
-    unsigned char *dst = &entryLen[0];
-
-    // If we assume the `sizeof entryLen` is 3,
-    // then  `i` will go {0, 1, 2},
-    // while `j` will go {2, 1, 0}.
-    for (int i = 0; i < sizeof entryLen; i++)
-    {
-        int j = sizeof entryLen - i - 1;
-        memcpy(dst + j, src + i, 1);
-    }
-#else
-    memcpy(&entryLen, &dataLen, sizeof entryLen);
-#endif
+    unsigned char entryLen[3] = {
+        static_cast<unsigned char>(dataLen >> 16),
+        static_cast<unsigned char>(dataLen >> 8),
+        static_cast<unsigned char>(dataLen >> 0)};
 
     fileStream->write((char *)&type, 1);
     fileStream->write((char *)entryLen, sizeof entryLen);
