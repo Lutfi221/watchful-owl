@@ -275,8 +275,15 @@ void logger::LogDecryptor::decrypt(CryptoPP::byte *cipher,
 
             DEBUG("Decrypt data");
             size_t outputLen = 0;
-            rotatingSymKey->decrypt(pCipher, dataLen, pPlain, dataLen, &outputLen);
-            pPlain += outputLen;
+            try
+            {
+                rotatingSymKey->decrypt(pCipher, dataLen, pPlain, dataLen, &outputLen);
+                pPlain += outputLen;
+            }
+            catch (const crypto::DecryptionError &ex)
+            {
+                SPDERROR(ex.what());
+            }
         }
 
         pCipher += dataLen;
