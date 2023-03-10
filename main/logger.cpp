@@ -161,13 +161,19 @@ std::string logger::Logger::prepareLogFile(time_t timestamp)
         return logPath.u8string();
     }
 
-    DEBUG("Create encrypted log file for the day and "
-          "put a version specifier on the first byte.");
+    DEBUG("Create encrypted log file for the day");
     this->lastAppendDate = date;
     std::ofstream f(logPath, std::ios::binary | std::ios::out | std::ios_base::app);
 
+    DEBUG("Put a version specifier on the first byte");
     char logfileVersion = ENC_LOGFILE_VERSION;
     f.write(&logfileVersion, 1);
+
+    if (this->rotatingSymKey != nullptr)
+    {
+        DEBUG("Append sym key on new log file");
+        this->appendSymKey(&f);
+    }
 
     return logPath.u8string();
 }
