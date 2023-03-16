@@ -386,14 +386,18 @@ NavInstruction MainPage::load()
     std::string desc = isInstanceRunning
                            ? "Watchful Owl is ACTIVE and currently logging your activity."
                            : "Watchful Owl is currently INACTIVE.";
-    std::vector<std::string> entries = {
+
+    std::vector<SelectionEntry> entries = {
         isInstanceRunning
-            ? "Deactivate Watchful Owl"
-            : "Activate Watchful Owl",
-        "Configure Autorun",
-        "Encryption",
-        "About Watchful Owl",
-        "Exit"};
+            ? SelectionEntry("Deactivate Watchful Owl")
+            : SelectionEntry("Activate Watchful Owl"),
+        SelectionEntry("Configure Autorun"),
+        SelectionEntry("Encryption",
+                       "",
+                       isInstanceRunning,
+                       "Deactivate Watchful Owl first before opening the encryption page."),
+        SelectionEntry("About Watchful Owl"),
+        SelectionEntry("Exit")};
 
     int selection = promptSelection(screen, &entries, "Main Menu", desc);
 
