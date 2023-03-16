@@ -57,6 +57,28 @@ ftxui::Element basePage(
     std::string title,
     std::string description);
 
+struct SelectionEntry
+{
+    std::string text = "";
+    std::string description = "";
+    bool disabled = false;
+    std::string disabilityMessage = "";
+    SelectionEntry(
+        std::string text = "",
+        std::string description = "",
+        bool disabled = false,
+        std::string disabilityMessage = "") : text(text),
+                                              description(description),
+                                              disabled(disabled),
+                                              disabilityMessage(disabilityMessage){};
+};
+
+int promptSelection(
+    ftxui::ScreenInteractive *screen,
+    std::vector<SelectionEntry> *entries,
+    std::string title,
+    std::string description);
+
 /// @brief Display a menu of options, and return the index of selected option.
 /// @param entries List of options
 /// @param title Title of the menu

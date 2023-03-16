@@ -50,7 +50,7 @@ void showInfo(ftxui::ScreenInteractive *screen,
 
 int promptSelection(
     ftxui::ScreenInteractive *screen,
-    std::vector<std::string> *entries,
+    std::vector<SelectionEntry> *entries,
     std::string title,
     std::string description)
 {
@@ -60,18 +60,50 @@ int promptSelection(
     MenuOption option;
     option.on_enter = screen->ExitLoopClosure();
 
-    auto menu = Menu(entries, &selected, &option);
+    std::vector<std::string> textEntries;
+
+    for (auto &entry : *entries)
+        textEntries.push_back(entry.text);
+
+    auto menu = Menu(&textEntries, &selected, &option);
     auto render = [&]()
     {
-        return basePage(menu->Render(), title, description);
+        auto entry = entries->at(selected);
+        std::vector<Element> e;
+        e.push_back(menu->Render());
+        e.push_back(separatorEmpty());
+        e.push_back(paragraph(entry.description));
+        if (entry.disabled)
+            e.push_back(paragraph(entry.disabilityMessage) | color(Color::Red));
+
+        return basePage(e, title, description);
     };
 
     auto renderer = Renderer(menu, render);
-    screen->Loop(renderer);
+    do
+    {
+        screen->Loop(renderer);
+    } while (entries->at(selected).disabled);
+
     INFO("User selected index `{}`, with the option `{}`",
          selected,
-         (*entries)[selected]);
+         (*entries)[selected].text);
     return selected;
+}
+
+int promptSelection(
+    ftxui::ScreenInteractive *screen,
+    std::vector<std::string> *entries,
+    std::string title,
+    std::string description)
+{
+    std::vector<SelectionEntry> e;
+    for (auto &entry : *entries)
+    {
+        e.push_back(SelectionEntry(entry));
+    }
+
+    return promptSelection(screen, &e, title, description);
 }
 
 bool promptPassword(
