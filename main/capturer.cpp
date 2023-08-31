@@ -46,13 +46,9 @@ static BOOL CALLBACK enumWindowCallback(HWND hWnd, LPARAM lparam)
 
     LONG exStyles = GetWindowLongW(hWnd, GWL_EXSTYLE);
     LONG styles = GetWindowLongW(hWnd, GWL_STYLE);
-    bool isCaption = (styles & WS_CAPTION) != 0;
-    bool isOverlapped = (styles & WS_OVERLAPPEDWINDOW) != 0;
     bool isActive = hWnd == activeWindow;
 
-    if ((IsWindowVisible(hWnd) && isCaption &&
-         isOverlapped && titleLength != 0) ||
-        isActive)
+    if ((IsWindowVisible(hWnd) && titleLength != 0) || isActive)
     {
         AppRecord appRecord;
         appRecord.path = toUtf8(getWindowProcessPath(hWnd));
