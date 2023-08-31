@@ -29,7 +29,7 @@ CPMAddPackage(
   "gh:gabime/spdlog@1.11.0"
 )
 CPMAddPackage(
-  "gh:abdes/cryptopp-cmake#CRYPTOPP_8_7_0_1"
+  "gh:abdes/cryptopp-cmake#v8.8.0"
 )
 CPMAddPackage(
   "gh:andrew-hardin/cmake-git-version-tracking#7d9442bfade5a47b77291e4117f81cc65887c7b9"
